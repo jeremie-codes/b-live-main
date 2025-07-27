@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Zap, TrendingUp } from 'lucide-react-native';
@@ -23,17 +23,23 @@ export default function HomeScreen() {
   return (
     <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View className="px-4 pt-4">
-          <Text className={`font-montserrat-bold text-2xl mb-2 ${
-            currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
-          }`}>
-            Bienvenue
-          </Text>
-          <Text className={`font-montserrat text-base mb-6 ${
-            currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-600'
-          }`}>
-            Découvrez les meilleurs événements en direct
-          </Text>
+        <View className="flex-row items-center justify-between px-4 py-6 ">
+          <View className='w-8 h-11 '>
+            <Image source={require('@/assets/images/b.png')} className='w-full h-full object-contain' />
+          </View>
+
+          <View className='' >
+            <Text className={`font-montserrat-bold text-2xl ${
+              currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
+            }`}>
+              Bienvenue
+            </Text>
+            <Text className={`font-montserrat text-base ${
+              currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+            }`}>
+              Découvrez les meilleurs événements en direct
+            </Text>
+          </View>
         </View>
 
         <CategoryFilter 

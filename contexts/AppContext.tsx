@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useColorScheme } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { API_URL } from '@/configs/index';
 
 interface User {
   id: string;
@@ -19,6 +22,7 @@ interface Notification {
 interface AppContextType {
   user: User | null;
   isLoggedIn: boolean;
+  token: string | null;
   theme: 'light' | 'dark' | 'system';
   currentTheme: 'light' | 'dark';
   notification: Notification | null;
@@ -33,6 +37,7 @@ interface AppContextType {
   removeFromWishlist: (eventId: number) => void;
   updateProfile: (name: string, password?: string) => Promise<boolean>;
   deleteAccount: () => Promise<boolean>;
+  // makeAuthenticatedRequest: (url: string, options?: any) => Promise<any>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -45,22 +50,24 @@ export function AppProvider({ children }: AppProviderProps) {
   const systemColorScheme = useColorScheme();
   const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
   const [notification, setNotification] = useState<Notification | null>(null);
 
   const currentTheme = theme === 'system' ? (systemColorScheme || 'light') : theme;
 
   const showNotification = (message: string, type: 'info' | 'success' | 'error') => {
-    const id = Date.now().toString();
-    setNotification({
-      id,
-      message,
-      type,
-      visible: true
-    });
+  const id = Date.now().toString();
+  
+  setNotification({
+    id,
+    message,
+    type,
+    visible: true
+  });
 
     // Auto-hide after 3.5 seconds
-    setTimeout(() => {
+  setTimeout(() => {
       hideNotification();
     }, 3500);
   };
@@ -73,62 +80,85 @@ export function AppProvider({ children }: AppProviderProps) {
   };
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Simple validation for demo
-    if (email && password) {
-      const mockUser: User = {
-        id: '1',
-        name: 'Jean Dupont',
-        email: email,
-        purchasedEvents: [1, 4, 6],
-        wishlist: [2, 5]
-      };
+    try {
+      const response = await axios.post(`${API_URL}/auth/login`, {
+        email,
+        password,
+      });
+
+      const { token: authToken, user: userData } = response.data.data;
       
-      setUser(mockUser);
+      // Store token and user data
+      await AsyncStorage.setItem('authToken', authToken);
+      await AsyncStorage.setItem('userData', JSON.stringify(userData));
+      
+      // Update state
+      setToken(authToken);
+      setUser(userData);
       setIsLoggedIn(true);
+      
+      // Configure axios default headers
+      axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
+      
       showNotification('Connexion réussie !', 'success');
       return true;
-    } else {
+    } catch (error: any) {
+      console.error('Login error:', error);
       showNotification('Email ou mot de passe incorrect', 'error');
       return false;
     }
   };
 
   const register = async (name: string, email: string, password: string): Promise<boolean> => {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Simple validation for demo
-    if (name.trim() && email.trim() && password.trim()) {
-      if (password.length < 6) {
-        showNotification('Le mot de passe doit contenir au moins 6 caractères', 'error');
-        return false;
-      }
-      
-      const mockUser: User = {
-        id: Date.now().toString(),
+    try {
+      const response = await axios.post(`${API_URL}/auth/register`, {
         name: name.trim(),
         email: email.trim(),
-        purchasedEvents: [],
-        wishlist: []
-      };
+        password,
+      });
+
+      const { token: authToken, user: userData } = response.data.data;
       
-      setUser(mockUser);
+      // Store token and user data
+      await AsyncStorage.setItem('authToken', authToken);
+      await AsyncStorage.setItem('userData', JSON.stringify(userData));
+      
+      // Update state
+      setToken(authToken);
+      setUser(userData);
       setIsLoggedIn(true);
+      
+      // Configure axios default headers
+      axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
+      
       showNotification('Inscription réussie ! Bienvenue !', 'success');
       return true;
-    } else {
-      showNotification('Veuillez remplir tous les champs', 'error');
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      const errorMessage = error.response?.data?.message || 'Erreur lors de l\'inscription';
+      showNotification(errorMessage, 'error');
       return false;
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    setIsLoggedIn(false);
-    showNotification('Déconnexion réussie', 'success');
+  const logout = async () => {
+    try {
+      // Clear stored data
+      await AsyncStorage.removeItem('authToken');
+      await AsyncStorage.removeItem('userData');
+      
+      // Clear axios default headers
+      delete axios.defaults.headers.common['Authorization'];
+      
+      // Update state
+      setToken(null);
+      setUser(null);
+      setIsLoggedIn(false);
+      
+      showNotification('Déconnexion réussie', 'success');
+    } catch (error: any) {
+      console.error('Logout error:', error);
+    }
   };
 
   const addToWishlist = (eventId: number) => {
@@ -158,36 +188,55 @@ export function AppProvider({ children }: AppProviderProps) {
   const updateProfile = async (name: string, password?: string): Promise<boolean> => {
     if (!user) return false;
     
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const updatedUser = {
-      ...user,
-      name: name
-    };
-    
-    setUser(updatedUser);
-    showNotification('Profil mis à jour avec succès', 'success');
-    return true;
+    try {
+      const updateData: any = { name };
+      if (password) {
+        updateData.password = password;
+      }
+
+      const response = await axios.put(`${API_URL}/user/profile`, {
+        data: updateData,
+      });
+      
+      const updatedUser = { ...user, ...response.data.user };
+      
+      // Update stored user data
+      await AsyncStorage.setItem('userData', JSON.stringify(updatedUser));
+      setUser(updatedUser);
+      
+      showNotification('Profil mis à jour avec succès', 'success');
+      return true;
+    } catch (error: any) {
+      console.error('Update profile error:', error);
+      showNotification('Erreur lors de la mise à jour du profil', 'error');
+      return false;
+    }
   };
 
   const deleteAccount = async (): Promise<boolean> => {
     if (!user) return false;
     
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Clear user data
-    setUser(null);
-    setIsLoggedIn(false);
-    showNotification('Compte supprimé avec succès', 'success');
-    return true;
+    try {
+      // await makeAuthenticatedRequest(`${API_URL}/user/account`, {
+      //   method: 'DELETE',
+      // });
+      
+      // Clear all data after successful deletion
+      await logout();
+      showNotification('Compte supprimé avec succès', 'success');
+      return true;
+    } catch (error: any) {
+      console.error('Delete account error:', error);
+      showNotification('Erreur lors de la suppression du compte', 'error');
+      return false;
+    }
   };
 
   return (
     <AppContext.Provider value={{
       user,
       isLoggedIn,
+      token,
       theme,
       currentTheme,
       notification,
@@ -201,7 +250,8 @@ export function AppProvider({ children }: AppProviderProps) {
       addToWishlist,
       removeFromWishlist,
       updateProfile,
-      deleteAccount
+      deleteAccount,
+      // makeAuthenticatedRequest
     }}>
       {children}
     </AppContext.Provider>
