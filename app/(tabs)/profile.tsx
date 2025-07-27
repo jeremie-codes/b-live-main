@@ -1,62 +1,34 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { User, Mail, Calendar, CreditCard, ChevronRight } from 'lucide-react-native';
+import { User, Mail, Calendar, CreditCard, ChevronRight, UserPlus, UserCog } from 'lucide-react-native';
+import { Moon, Sun, Smartphone, Globe, Shield } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
+import { useRouter } from 'expo-router';
 
 export default function ProfileScreen() {
-  const { currentTheme, user, showNotification } = useApp();
-
-  if (!user) {
-    return (
-      <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
-        <View className="flex-1 justify-center items-center px-4">
-          <User size={64} color={currentTheme === 'dark' ? '#4B5563' : '#9CA3AF'} />
-          <Text className={`font-montserrat-bold text-xl mb-4 mt-4 ${
-            currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
-          }`}>
-            Non connecté
-          </Text>
-          <Text className={`font-montserrat text-center mb-6 ${
-            currentTheme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-          }`}>
-            Connectez-vous pour accéder à votre profil
-          </Text>
-          <TouchableOpacity
-            onPress={() => showNotification('Fonctionnalité en développement', 'info')}
-            className="bg-primary-500 px-6 py-3 rounded-xl"
-          >
-            <Text className="font-montserrat-semibold text-white">Se connecter</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  const { currentTheme, theme, setTheme, user, showNotification, logout } = useApp();
+  
+  const router = useRouter();
 
   const menuItems = [
     {
-      icon: Mail,
-      title: 'Email',
-      subtitle: user.email,
-      onPress: () => showNotification('Fonctionnalité en développement', 'info')
+      icon: UserCog,
+      title: 'Modifier le profil',
+      subtitle: user?.email,
+      onPress: () => router.push('/edit-profile')
     },
     {
       icon: Calendar,
       title: 'Mes Événements',
-      subtitle: `${user.purchasedEvents.length} événement(s) acheté(s)`,
-      onPress: () => showNotification('Consulter l\'onglet Mes Événements', 'info')
-    },
-    {
-      icon: CreditCard,
-      title: 'Moyens de Paiement',
-      subtitle: 'Gérer vos cartes',
-      onPress: () => showNotification('Fonctionnalité en développement', 'info')
+      subtitle: `${user?.purchasedEvents.length} événement(s) acheté(s)`,
+      onPress: () => router.push('/(tabs)/my-events')
     }
   ];
 
   return (
     <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      <View className="px-4 pt-4">
+      <ScrollView className="px-4 pt-4">
         <Text className={`font-montserrat-bold text-2xl mb-8 ${
           currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
         }`}>
@@ -76,7 +48,7 @@ export default function ProfileScreen() {
             <Text className={`font-montserrat-bold text-xl mb-1 ${
               currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
             }`}>
-              {user.name}
+              {user?.name}
             </Text>
             <Text className={`font-montserrat ${
               currentTheme === 'dark' ? 'text-gray-400' : 'text-gray-600'
@@ -126,10 +98,92 @@ export default function ProfileScreen() {
           ))}
         </View>
 
+        {/* Theme Section */}
+        <View className={`rounded-xl p-4 mb-6 mt-4 ${
+          currentTheme === 'dark' ? 'bg-gray-800' : 'bg-white'
+        } shadow-sm`}>
+          <Text className={`font-montserrat-bold text-lg mb-4 ${
+            currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
+          }`}>
+            Apparence
+          </Text>
+
+          <View className="space-y-3">
+            <TouchableOpacity
+              onPress={() => setTheme('light')}
+              className={`flex-row items-center p-3 rounded-lg mb-2 ${
+                theme === 'light' 
+                  ? 'bg-primary-500' 
+                  : currentTheme === 'dark' 
+                  ? 'bg-gray-700' 
+                  : 'bg-gray-50'
+              }`}
+            >
+              <Sun size={20} color={theme === 'light' ? '#FFFFFF' : currentTheme === 'dark' ? '#E5E7EB' : '#374151'} />
+              <Text className={`ml-3 font-montserrat-medium ${
+                theme === 'light' 
+                  ? 'text-white' 
+                  : currentTheme === 'dark' 
+                  ? 'text-gray-200' 
+                  : 'text-gray-700'
+              }`}>
+                Thème Clair
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => setTheme('dark')}
+              className={`flex-row items-center p-3 rounded-lg mb-2 ${
+                theme === 'dark' 
+                  ? 'bg-primary-500' 
+                  : currentTheme === 'dark' 
+                  ? 'bg-gray-700' 
+                  : 'bg-gray-50'
+              }`}
+            >
+              <Moon size={20} color={theme === 'dark' ? '#FFFFFF' : currentTheme === 'dark' ? '#E5E7EB' : '#374151'} />
+              <Text className={`ml-3 font-montserrat-medium ${
+                theme === 'dark' 
+                  ? 'text-white' 
+                  : currentTheme === 'dark' 
+                  ? 'text-gray-200' 
+                  : 'text-gray-700'
+              }`}>
+                Thème Sombre
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => setTheme('system')}
+              className={`flex-row items-center p-3 rounded-lg ${
+                theme === 'system' 
+                  ? 'bg-primary-500' 
+                  : currentTheme === 'dark' 
+                  ? 'bg-gray-700' 
+                  : 'bg-gray-50'
+              }`}
+            >
+              <Smartphone size={20} color={theme === 'system' ? '#FFFFFF' : currentTheme === 'dark' ? '#E5E7EB' : '#374151'} />
+              <Text className={`ml-3 font-montserrat-medium ${
+                theme === 'system' 
+                  ? 'text-white' 
+                  : currentTheme === 'dark' 
+                  ? 'text-gray-200' 
+                  : 'text-gray-700'
+              }`}>
+                Automatique
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
         {/* Logout Button */}
         <TouchableOpacity
-          onPress={() => showNotification('Déconnexion simulée', 'success')}
-          className={`mt-6 p-4 rounded-xl border ${
+          onPress={() => {
+            logout();
+            router.replace('/welcome');
+          }}
+          className={`mt-2 mb-12 p-4 rounded-xl border ${
             currentTheme === 'dark' 
               ? 'border-red-800 bg-red-900/20' 
               : 'border-red-200 bg-red-50'
@@ -139,7 +193,7 @@ export default function ProfileScreen() {
             Se déconnecter
           </Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }

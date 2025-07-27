@@ -2,14 +2,14 @@ import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ArrowLeft, Calendar, Users, DollarSign, Play, Clock } from 'lucide-react-native';
+import { ArrowLeft, Calendar, Users, DollarSign, Play, Clock, Heart } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import { mockEvents } from '@/data/events';
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const { currentTheme, user, showNotification } = useApp();
+  const { currentTheme, user, showNotification, addToWishlist, removeFromWishlist } = useApp();
   
   const event = mockEvents.find(e => e.id === parseInt(id as string));
   
@@ -28,6 +28,7 @@ export default function EventDetailScreen() {
   }
 
   const isPurchased = user?.purchasedEvents.includes(event.id);
+  const isInWishlist = user?.wishlist.includes(event.id);
   
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -53,6 +54,18 @@ export default function EventDetailScreen() {
     }
   };
 
+  const handleWishlistToggle = () => {
+    if (!user) {
+      showNotification('Veuillez vous connecter pour utiliser la wishlist', 'error');
+      return;
+    }
+
+    if (isInWishlist) {
+      removeFromWishlist(event.id);
+    } else {
+      addToWishlist(event.id);
+    }
+  };
   return (
     <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-white'}`}>
       {/* Header */}
@@ -62,11 +75,21 @@ export default function EventDetailScreen() {
         <TouchableOpacity onPress={() => router.back()} className="mr-3">
           <ArrowLeft size={24} color={currentTheme === 'dark' ? '#FFFFFF' : '#000000'} />
         </TouchableOpacity>
-        <Text className={`font-montserrat-bold text-lg ${
+        <Text className={`font-montserrat-bold text-lg flex-1 ${
           currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
         }`}>
           Détails de l'Événement
         </Text>
+        <TouchableOpacity
+          onPress={handleWishlistToggle}
+          className="ml-3"
+        >
+          <Heart 
+            size={24} 
+            color={isInWishlist ? '#EF4444' : (currentTheme === 'dark' ? '#6B7280' : '#9CA3AF')}
+            fill={isInWishlist ? '#EF4444' : 'transparent'}
+          />
+        </TouchableOpacity>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>

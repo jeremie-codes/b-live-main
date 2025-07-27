@@ -12,7 +12,54 @@ import {
 import { AppProvider } from '@/contexts/AppContext';
 import { SplashScreen } from 'expo-router';
 import NotificationBanner from '@/components/NotificationBanner';
+import { useApp } from '@/contexts/AppContext';
 import '../global.css';
+
+function RootLayoutNav() {
+  const { isLoggedIn } = useApp();
+
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen 
+        name="welcome" 
+        options={{ 
+          headerShown: false,
+          gestureEnabled: false 
+        }} 
+      />
+      <Stack.Screen 
+        name="login" 
+        options={{ 
+          headerShown: false,
+          gestureEnabled: true 
+        }} 
+      />
+      <Stack.Screen 
+        name="register" 
+        options={{ 
+          headerShown: false,
+          gestureEnabled: true 
+        }} 
+      />
+      <Stack.Screen 
+        name="edit-profile" 
+        options={{ 
+          headerShown: false,
+          gestureEnabled: true 
+        }} 
+      />
+      <Stack.Screen 
+        name="(tabs)" 
+        redirect={!isLoggedIn}
+      />
+      <Stack.Screen name="event/[id]" redirect={!isLoggedIn} />
+      <Stack.Screen name="payment/[id]" redirect={!isLoggedIn} />
+      <Stack.Screen name="live/[id]" redirect={!isLoggedIn} />
+      <Stack.Screen name="+not-found" />
+    </Stack>
+  );
+}
+
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -37,13 +84,7 @@ export default function RootLayout() {
 
   return (
     <AppProvider>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="event/[id]" />
-        <Stack.Screen name="payment/[id]" />
-        <Stack.Screen name="live/[id]" />
-        <Stack.Screen name="+not-found" />
-      </Stack>
+      <RootLayoutNav />
       <NotificationBanner />
       <StatusBar style="auto" />
     </AppProvider>

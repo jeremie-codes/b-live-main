@@ -4,8 +4,8 @@
     "slug": "b-live",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "icon": "./assets/images/icon-app.png",
+    "scheme": "b-live",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -14,9 +14,24 @@
     "web": {
       "bundler": "metro",
       "output": "single",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/icon-app.png"
     },
-    "plugins": ["expo-router", "expo-font", "expo-web-browser"],
+    "plugins": [
+      "expo-router", "expo-font", "expo-web-browser",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#222222",
+          "image": "./assets/images/splashs.png",
+          "dark": {
+            "image": "./assets/images/splashs.png",
+            "backgroundColor": "#13f28c"
+          },
+          "resizeMode": "contain",
+          "imageWidth": 200
+        }
+      ]
+    ],
     "experiments": {
       "typedRoutes": true
     }
