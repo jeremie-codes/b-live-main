@@ -1,18 +1,49 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowLeft, Calendar, Users, DollarSign, Play, Clock, Heart } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
-import { mockEvents } from '@/data/events';
+import { getEventById, toggleFavorite } from '@/services/api';
+import { EventType } from '@/types';
 
 export default function EventDetailScreen() {
-  const { id } = useLocalSearchParams();
+const { id } = useLocalSearchParams<{ id: any }>();
   const router = useRouter();
-  const { currentTheme, user, showNotification, addToWishlist, removeFromWishlist } = useApp();
+  const { currentTheme, user, showNotification, triggerAddToFavoriteRefresh } = useApp();
+  const [event, setEvent] = useState<EventType | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isInFavorite, setIsFavorite] = useState(false);
+  const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
   
-  const event = mockEvents.find(e => e.id === parseInt(id as string));
-  
+  useEffect(() => {
+    const loadEvent = async () => {
+      if (!id) return;
+      
+      try {
+        const data = await getEventById(id);
+        setEvent(data);
+        setIsFavorite(data.is_favorite);
+      } catch (error) {
+        showNotification('Erreur de chargement de l\'evénément !', 'error');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadEvent();
+  }, [id]);
+
+  if (isLoading) {
+    return (
+      <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <View className="flex-1 justify-center items-center">
+            <ActivityIndicator size="large" color="#8b5cf6" />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   if (!event) {
     return (
       <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
@@ -22,14 +53,24 @@ export default function EventDetailScreen() {
           }`}>
             Événement non trouvé
           </Text>
+
+          <TouchableOpacity 
+            onPress={() => router.back()}
+            className="mt-4 bg-primary-600 px-6 py-3 rounded-xl"
+          >
+            <Text className="text-white font-['Montserrat-SemiBold']">
+              Revenir en arrière
+            </Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
   }
 
-  const isPurchased = user?.purchasedEvents.includes(event.id);
-  const isInWishlist = user?.wishlist.includes(event.id);
-  
+  const isPurchased = true; // event?.is_paid || null
+  // const isPurchased = event?.is_paid || null
+  const mediaUrl = event?.media?.[1]?.original_url || event?.media?.[0]?.original_url || null;
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('fr-FR', {
@@ -42,9 +83,27 @@ export default function EventDetailScreen() {
     });
   };
 
+  const isLiveEvent = (event: any): boolean => {
+    const hasLink = !!event.link;
+
+    const eventDate = new Date(event.date);
+    const now = new Date();
+
+    // Jour identique
+    const isSameDay =
+      eventDate.getFullYear() === now.getFullYear() &&
+      eventDate.getMonth() === now.getMonth() &&
+      eventDate.getDate() === now.getDate();
+
+    // Heure déjà atteinte
+    const isTimePassed = eventDate <= now;
+
+    return hasLink && isSameDay && isTimePassed;
+  };
+
   const handleAccess = () => {
     if (isPurchased) {
-      if (event.isLive) {
+      if (!isLiveEvent(event)) {
         router.push(`/live/${event.id}`);
       } else {
         showNotification('Événement pas encore commencé', 'info');
@@ -53,23 +112,34 @@ export default function EventDetailScreen() {
       router.push(`/payment/${event.id}`);
     }
   };
-
-  const handleWishlistToggle = () => {
+  
+  const handleFavoriteToggle = async () => {
     if (!user) {
-      showNotification('Veuillez vous connecter pour utiliser la wishlist', 'error');
+      showNotification('Veuillez vous connecter pour utiliser la Favorite', 'error');
       return;
     }
 
-    if (isInWishlist) {
-      removeFromWishlist(event.id);
-    } else {
-      addToWishlist(event.id);
+    setIsTogglingFavorite(true);
+    try {
+      const result = await toggleFavorite(event.id, isInFavorite);
+      setIsFavorite(result.isFavorite);
+      showNotification(
+        result.isFavorite ? 'Évenément ajouté dans la list de souhait' : 'Évenément supprimer dans la list de souhait',
+        'success'
+      );
+      triggerAddToFavoriteRefresh();
+    } catch (error) {
+      showNotification('Error de mise à jour des souhaits', 'error');
+    } finally {
+      setIsTogglingFavorite(false);
     }
+
   };
+
   return (
     <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-white'}`}>
       {/* Header */}
-      <View className={`flex-row items-center px-4 py-3 ${
+      <View className={`flex-row items-center px-4 py-5 ${
         currentTheme === 'dark' ? 'bg-gray-900' : 'bg-white'
       }`}>
         <TouchableOpacity onPress={() => router.back()} className="mr-3">
@@ -81,27 +151,37 @@ export default function EventDetailScreen() {
           Détails de l'Événement
         </Text>
         <TouchableOpacity
-          onPress={handleWishlistToggle}
+          onPress={handleFavoriteToggle}
+          disabled={isTogglingFavorite}
           className="ml-3"
         >
-          <Heart 
-            size={24} 
-            color={isInWishlist ? '#EF4444' : (currentTheme === 'dark' ? '#6B7280' : '#9CA3AF')}
-            fill={isInWishlist ? '#EF4444' : 'transparent'}
-          />
+          {isTogglingFavorite ? (
+            <ActivityIndicator size="small" color="#8b5cf6" />
+          ) : (
+            <Heart 
+              size={24} 
+              color={isInFavorite ? '#EF4444' : (currentTheme === 'dark' ? '#6B7280' : '#9CA3AF')}
+              fill={isInFavorite ? '#EF4444' : 'transparent'}
+            />
+          )}
+  
         </TouchableOpacity>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Event Image */}
         <View className="relative">
-          <Image
-            source={{ uri: event.image }}
-            className="w-full h-64"
-            resizeMode="cover"
-          />
+          {mediaUrl ? (
+            <Image
+              source={{ uri: mediaUrl }}
+              className={'w-full h-64'}
+              style={{ resizeMode: 'cover' }}
+            />
+          ) : (
+            <View className={'w-full h-64 bg-gray-900'} />
+          )}
           
-          {event.isLive && (
+          {isLiveEvent(event) && (
             <View className="absolute top-4 left-4 bg-red-500 px-3 py-2 rounded-full flex-row items-center">
               <View className="w-2 h-2 bg-white rounded-full mr-2" />
               <Text className="text-white font-montserrat-bold text-sm">EN DIRECT</Text>
@@ -109,7 +189,7 @@ export default function EventDetailScreen() {
           )}
           
           <View className="absolute top-4 right-4 bg-black/70 px-3 py-2 rounded-full">
-            <Text className="text-white font-montserrat-medium text-sm">{event.category}</Text>
+            <Text className="text-white font-montserrat-medium text-sm">{event?.category?.name}</Text>
           </View>
         </View>
 
@@ -118,13 +198,13 @@ export default function EventDetailScreen() {
           <Text className={`font-montserrat-bold text-2xl mb-3 ${
             currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
           }`}>
-            {event.title}
+            {event?.title}
           </Text>
           
           <Text className={`font-montserrat text-base leading-6 mb-6 ${
             currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-600'
           }`}>
-            {event.description}
+            {event?.description}
           </Text>
 
           {/* Event Info */}
@@ -143,7 +223,7 @@ export default function EventDetailScreen() {
             <View className="flex-row items-center mb-3">
               <DollarSign size={20} color="#EAB308" />
               <Text className={`ml-3 font-montserrat-bold text-primary-500`}>
-                {event.price.toFixed(2)}€
+                {event.price} {event.currency}
               </Text>
             </View>
 
@@ -160,12 +240,12 @@ export default function EventDetailScreen() {
           {/* Status and Action */}
           {isPurchased && (
             <View className={`rounded-xl p-4 mb-4 ${
-              event.isLive ? 'bg-green-100 border border-green-200' : 'bg-blue-100 border border-blue-200'
+              isLiveEvent(event) ? 'bg-green-100 border border-green-200' : 'bg-blue-100 border border-blue-200'
             }`}>
               <Text className={`font-montserrat-semibold ${
-                event.isLive ? 'text-green-800' : 'text-blue-800'
+                isLiveEvent(event) ? 'text-green-800' : 'text-blue-800'
               }`}>
-                {event.isLive ? '✅ Accès autorisé - En direct' : '📅 Accès autorisé - Programmé'}
+                {isLiveEvent(event) ? '✅ Accès autorisé - En direct' : '📅 Accès autorisé - Programmé'}
               </Text>
             </View>
           )}
@@ -174,7 +254,7 @@ export default function EventDetailScreen() {
             onPress={handleAccess}
             className={`py-4 px-6 rounded-xl ${
               isPurchased 
-                ? event.isLive 
+                ? !isLiveEvent(event) 
                   ? 'bg-green-500' 
                   : 'bg-gray-400'
                 : 'bg-primary-500'
@@ -182,7 +262,7 @@ export default function EventDetailScreen() {
           >
             <View className="flex-row items-center justify-center">
               {isPurchased ? (
-                event.isLive ? (
+                !isLiveEvent(event) ? (
                   <>
                     <Play size={20} color="#FFFFFF" />
                     <Text className="ml-2 font-montserrat-bold text-white text-lg">
@@ -201,7 +281,7 @@ export default function EventDetailScreen() {
                 <>
                   <DollarSign size={20} color="#FFFFFF" />
                   <Text className="ml-2 font-montserrat-bold text-white text-lg">
-                    Acheter l'Accès - {event.price.toFixed(2)}€
+                    Acheter l'Accès - {event.price} {event.currency}
                   </Text>
                 </>
               )}

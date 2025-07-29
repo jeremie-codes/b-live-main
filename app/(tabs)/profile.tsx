@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { User, Mail, Calendar, CreditCard, ChevronRight, UserPlus, UserCog } from 'lucide-react-native';
 import { Moon, Sun, Smartphone, Globe, Shield } from 'lucide-react-native';
@@ -7,7 +7,8 @@ import { useApp } from '@/contexts/AppContext';
 import { useRouter } from 'expo-router';
 
 export default function ProfileScreen() {
-  const { currentTheme, theme, setTheme, user, showNotification, logout } = useApp();
+  const { currentTheme, theme, setTheme, user, logout } = useApp();
+    const [isLoading, setIsLoading] = useState(false);
   
   const router = useRouter();
 
@@ -21,7 +22,7 @@ export default function ProfileScreen() {
     {
       icon: Calendar,
       title: 'Mes Événements',
-      subtitle: `${user?.purchasedEvents.length} événement(s) acheté(s)`,
+      subtitle: Array.isArray(user?.purchasedEvents) ? `${user?.purchasedEvents.length} événement(s) acheté(s)` : 'Aucun événement acheté',
       onPress: () => router.push('/(tabs)/my-events')
     }
   ];
@@ -53,7 +54,11 @@ export default function ProfileScreen() {
             <Text className={`font-montserrat ${
               currentTheme === 'dark' ? 'text-gray-400' : 'text-gray-600'
             }`}>
-              Membre depuis janvier 2025
+              Membre depuis le {new Date(user?.created_at || '').toLocaleDateString('fr-FR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
             </Text>
           </View>
         </View>
@@ -179,9 +184,14 @@ export default function ProfileScreen() {
 
         {/* Logout Button */}
         <TouchableOpacity
-          onPress={() => {
-            logout();
-            router.replace('/welcome');
+          disabled={isLoading}
+          onPress={async () => {
+             setIsLoading(true);
+            const success = await logout();
+            if (success) {
+              router.replace('/welcome');
+            }
+            setIsLoading(false);
           }}
           className={`mt-2 mb-12 p-4 rounded-xl border ${
             currentTheme === 'dark' 
@@ -190,7 +200,7 @@ export default function ProfileScreen() {
           }`}
         >
           <Text className="font-montserrat-semibold text-red-500 text-center">
-            Se déconnecter
+            Se déconnecter {isLoading && <ActivityIndicator size="small" color="#FF0000" />}
           </Text>
         </TouchableOpacity>
       </ScrollView>

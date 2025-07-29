@@ -4,7 +4,7 @@
     "slug": "b-live",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon-app.png",
+    "icon": "./assets/images/icons.png",
     "scheme": "b-live",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,

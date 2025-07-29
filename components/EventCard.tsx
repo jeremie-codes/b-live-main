@@ -1,27 +1,19 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
-import { Calendar, Users, DollarSign } from 'lucide-react-native';
+import { Calendar, Users, DollarSign, Currency } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
-
-interface Event {
-  id: number;
-  title: string;
-  description: string;
-  image: string;
-  category: string;
-  isLive: boolean;
-  date: string;
-  price: number;
-}
+import { EventType } from '@/types';
 
 interface EventCardProps {
-  event: Event;
+  event: EventType;
   onPress: () => void;
 }
 
 export default function EventCard({ event, onPress }: EventCardProps) {
   const { currentTheme } = useApp();
   
+  const mediaUrl = event?.media?.[1]?.original_url || event?.media?.[0]?.original_url || null;
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('fr-FR', {
@@ -32,6 +24,25 @@ export default function EventCard({ event, onPress }: EventCardProps) {
     });
   };
 
+  const isLiveEvent = (event: any): boolean => {
+    const hasLink = !!event.link;
+
+    const eventDate = new Date(event.date);
+    const now = new Date();
+
+    // Jour identique
+    const isSameDay =
+      eventDate.getFullYear() === now.getFullYear() &&
+      eventDate.getMonth() === now.getMonth() &&
+      eventDate.getDate() === now.getDate();
+
+    // Heure déjà atteinte
+    const isTimePassed = eventDate <= now;
+
+    return hasLink && isSameDay && isTimePassed;
+  };
+
+
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -40,13 +51,17 @@ export default function EventCard({ event, onPress }: EventCardProps) {
       }`}
     >
       <View className="relative">
-        <Image
-          source={{ uri: event.image }}
-          className="w-full h-48"
-          resizeMode="cover"
-        />
-        
-        {event.isLive && (
+          {mediaUrl ? (
+            <Image
+              source={{ uri: mediaUrl }}
+              className={'w-full h-48'}
+              style={{ resizeMode: 'cover' }}
+            />
+          ) : (
+            <View className={'w-full h-48 bg-gray-900'} />
+          )}
+
+        {isLiveEvent(event) && (
           <View className="absolute top-3 left-3 bg-red-500 px-3 py-1 rounded-full flex-row items-center">
             <View className="w-2 h-2 bg-white rounded-full mr-2" />
             <Text className="text-white font-montserrat-semibold text-xs">EN DIRECT</Text>
@@ -54,7 +69,7 @@ export default function EventCard({ event, onPress }: EventCardProps) {
         )}
         
         <View className="absolute top-3 right-3 bg-black/50 px-3 py-1 rounded-full">
-          <Text className="text-white font-montserrat-medium text-xs">{event.category}</Text>
+          <Text className="text-white font-montserrat-medium text-xs">{event.category.name}</Text>
         </View>
       </View>
       
@@ -85,12 +100,12 @@ export default function EventCard({ event, onPress }: EventCardProps) {
           </View>
           
           <View className="flex-row items-center">
-            <DollarSign 
+            {/* <DollarSign 
               size={16} 
               color="#EAB308" 
-            />
+            /> */}
             <Text className="ml-1 font-montserrat-bold text-primary-500">
-              {event.price.toFixed(2)}€
+              {event.price} {event.currency}
             </Text>
           </View>
         </View>

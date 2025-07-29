@@ -9,7 +9,8 @@ interface User {
   name: string;
   email: string;
   purchasedEvents: number[];
-  wishlist: number[];
+  WiaddToFavorite: number[];
+  created_at: string;
 }
 
 interface Notification {
@@ -26,17 +27,19 @@ interface AppContextType {
   theme: 'light' | 'dark' | 'system';
   currentTheme: 'light' | 'dark';
   notification: Notification | null;
-  setUser: (user: User | null) => void;
-  setTheme: (theme: 'light' | 'dark' | 'system') => void;
   showNotification: (message: string, type: 'info' | 'success' | 'error') => void;
   hideNotification: () => void;
+  setUser: (user: User | null) => void;
+  setTheme: (theme: 'light' | 'dark' | 'system') => void;
   login: (email: string, password: string) => Promise<boolean>;
   register: (name: string, email: string, password: string) => Promise<boolean>;
-  logout: () => void;
-  addToWishlist: (eventId: number) => void;
-  removeFromWishlist: (eventId: number) => void;
-  updateProfile: (name: string, password?: string) => Promise<boolean>;
+  logout: () => Promise<boolean>;
+  addToFavorite: (eventId: number) => void;
+  removeFromWiaddToFavorite: (eventId: number) => void;
+  updateProfile: (name: string, email: string, password?: string) => Promise<boolean>;
   deleteAccount: () => Promise<boolean>;
+  triggerAddToFavoriteRefresh: () => void;
+  favoriteRefreshKey: number;
   // makeAuthenticatedRequest: (url: string, options?: any) => Promise<any>;
 }
 
@@ -53,6 +56,7 @@ export function AppProvider({ children }: AppProviderProps) {
   const [token, setToken] = useState<string | null>(null);
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
   const [notification, setNotification] = useState<Notification | null>(null);
+  const [favoriteRefreshKey, setFavoriteRefreshKey] = useState(Date.now());
 
   const currentTheme = theme === 'system' ? (systemColorScheme || 'light') : theme;
 
@@ -92,6 +96,7 @@ export function AppProvider({ children }: AppProviderProps) {
       await AsyncStorage.setItem('authToken', authToken);
       await AsyncStorage.setItem('userData', JSON.stringify(userData));
       
+      // console.log(userData)
       // Update state
       setToken(authToken);
       setUser(userData);
@@ -143,6 +148,9 @@ export function AppProvider({ children }: AppProviderProps) {
 
   const logout = async () => {
     try {
+      
+      await axios.post(`${API_URL}/logout`);
+
       // Clear stored data
       await AsyncStorage.removeItem('authToken');
       await AsyncStorage.removeItem('userData');
@@ -156,50 +164,55 @@ export function AppProvider({ children }: AppProviderProps) {
       setIsLoggedIn(false);
       
       showNotification('Déconnexion réussie', 'success');
+
+      return true;
     } catch (error: any) {
+      showNotification('Déconnexion échouée', 'error');
       console.error('Logout error:', error);
+      return false;
     }
   };
 
-  const addToWishlist = (eventId: number) => {
+  const addToFavorite = (eventId: number) => {
     if (!user) return;
     
-    if (!user.wishlist.includes(eventId)) {
+    if (!user.WiaddToFavorite.includes(eventId)) {
       const updatedUser = {
         ...user,
-        wishlist: [...user.wishlist, eventId]
+        WiaddToFavorite: [...user.WiaddToFavorite, eventId]
       };
       setUser(updatedUser);
-      showNotification('Événement ajouté à la wishlist', 'success');
+      showNotification('Événement ajouté à la WiaddToFavorite', 'success');
     }
   };
 
-  const removeFromWishlist = (eventId: number) => {
+  const removeFromWiaddToFavorite = (eventId: number) => {
     if (!user) return;
     
     const updatedUser = {
       ...user,
-      wishlist: user.wishlist.filter(id => id !== eventId)
+      WiaddToFavorite: user.WiaddToFavorite.filter(id => id !== eventId)
     };
     setUser(updatedUser);
-    showNotification('Événement retiré de la wishlist', 'info');
+    showNotification('Événement retiré de la WiaddToFavorite', 'info');
   };
 
-  const updateProfile = async (name: string, password?: string): Promise<boolean> => {
+  const updateProfile = async (name: string, email: string, password?: string): Promise<boolean> => {
     if (!user) return false;
     
     try {
-      const updateData: any = { name };
+      const updateData: any = { name, email };
       if (password) {
         updateData.password = password;
       }
 
-      const response = await axios.put(`${API_URL}/user/profile`, {
-        data: updateData,
-      });
-      
-      const updatedUser = { ...user, ...response.data.user };
-      
+      const response = await axios.post(`${API_URL}/profile`, updateData);
+
+      const { success, data } = response.data;
+      const userResponse = data[1];
+
+      const updatedUser = { ...user, ...userResponse };
+
       // Update stored user data
       await AsyncStorage.setItem('userData', JSON.stringify(updatedUser));
       setUser(updatedUser);
@@ -217,19 +230,23 @@ export function AppProvider({ children }: AppProviderProps) {
     if (!user) return false;
     
     try {
-      // await makeAuthenticatedRequest(`${API_URL}/user/account`, {
-      //   method: 'DELETE',
-      // });
+      const response = await axios.post(`${API_URL}/account/delete`);
+
+      const { success } = response.data;
       
       // Clear all data after successful deletion
       await logout();
       showNotification('Compte supprimé avec succès', 'success');
-      return true;
+      return success;
     } catch (error: any) {
       console.error('Delete account error:', error);
       showNotification('Erreur lors de la suppression du compte', 'error');
       return false;
     }
+  };
+
+  const triggerAddToFavoriteRefresh = () => {
+    setFavoriteRefreshKey(Date.now());
   };
 
   return (
@@ -247,10 +264,12 @@ export function AppProvider({ children }: AppProviderProps) {
       login,
       register,
       logout,
-      addToWishlist,
-      removeFromWishlist,
+      addToFavorite,
+      removeFromWiaddToFavorite,
       updateProfile,
       deleteAccount,
+      triggerAddToFavoriteRefresh,
+      favoriteRefreshKey
       // makeAuthenticatedRequest
     }}>
       {children}

@@ -1,29 +1,98 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, Filter, Calendar } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useApp } from '@/contexts/AppContext';
-import { mockEvents, categories } from '@/data/events';
+import { getEvents } from '@/services/api';
 import EventCard from '@/components/EventCard';
+import { EventType } from '@/types';
+import CategoryFilter from '@/components/CategoryFilter';
 
 export default function SearchScreen() {
-  const { currentTheme } = useApp();
+  const { currentTheme, showNotification } = useApp();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const [data, setData] = useState<EventType[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('Tous');
   const [dateFilter, setDateFilter] = useState('Tous');
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredEvents = mockEvents.filter(event => {
+  const isLiveEvent = (event: any): boolean => {
+    const hasLink = !!event.link;
+
+    const eventDate = new Date(event.date);
+    const now = new Date();
+
+    // Jour identique
+    const isSameDay =
+      eventDate.getFullYear() === now.getFullYear() &&
+      eventDate.getMonth() === now.getMonth() &&
+      eventDate.getDate() === now.getDate();
+
+    // Heure déjà atteinte
+    const isTimePassed = eventDate <= now;
+
+    return hasLink && isSameDay && isTimePassed;
+  };
+  
+  const isUpcomingEvent = (event: any): boolean => {
+    const eventDate = new Date(event.date);
+    const today = new Date();
+
+    // Ignore time, compare just the dates
+    const eventOnlyDate = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+    const todayOnlyDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    return eventOnlyDate > todayOnlyDate;
+  };
+  
+  const isOldEvent = (event: any): boolean => {
+    const eventDate = new Date(event.date);
+    const today = new Date();
+
+    const eventOnlyDate = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+    const todayOnlyDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    return eventOnlyDate < todayOnlyDate;
+  };
+  
+  const filteredEvents = data.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          event.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'Tous' || event.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'Tous' || event.category.name === selectedCategory;
     const matchesDate = dateFilter === 'Tous' || 
-                       (dateFilter === 'Live' && event.isLive) ||
-                       (dateFilter === 'À venir' && !event.isLive);
-    
+                       (dateFilter === 'Live' && isLiveEvent(event)) ||
+                       (dateFilter === 'À venir' && isUpcomingEvent(event))||
+                       (dateFilter === 'Passé' && isOldEvent(event));
+
     return matchesSearch && matchesCategory && matchesDate;
   });
+  
+  // const filteredEvents = selectedCategory === 'Tous' 
+  //   ? data
+  //   : data.filter(event => event.category.name === selectedCategory);
+
+  const liveEvents = filteredEvents.filter(event => isLiveEvent(event));
+  const upcomingEvents = filteredEvents.filter(event => isUpcomingEvent(event));
+  const oldEvents = filteredEvents.filter(event => isOldEvent(event));
+
+  const loadEvents = async () => {
+    try {
+      const data = await getEvents();
+
+      setData(Array.isArray(data) ? data : []);
+
+    } catch (error) {
+      showNotification('Chargement des événements échoué !', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadEvents();
+  }, []);
 
   return (
     <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
@@ -51,39 +120,16 @@ export default function SearchScreen() {
         </View>
 
         {/* Filters */}
-        <View className="flex-row mb-4">
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-1">
-            <View className="flex-row">
-              {categories.map((category) => (
-                <TouchableOpacity
-                  key={category}
-                  onPress={() => setSelectedCategory(category)}
-                  className={`mr-3 px-4 py-2 rounded-full ${
-                    selectedCategory === category
-                      ? 'bg-primary-500'
-                      : currentTheme === 'dark'
-                      ? 'bg-gray-700'
-                      : 'bg-gray-100'
-                  }`}
-                >
-                  <Text className={`font-montserrat-medium text-sm ${
-                    selectedCategory === category
-                      ? 'text-white'
-                      : currentTheme === 'dark'
-                      ? 'text-gray-300'
-                      : 'text-gray-700'
-                  }`}>
-                    {category}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </ScrollView>
-        </View>
+        {/* <View className="flex-row mb-4 border border-gray-200 "> */}
+          <CategoryFilter 
+            selectedCategory={selectedCategory}
+            onSelectCategory={setSelectedCategory}
+          />  
+        {/* </View> */}
 
         {/* Date Filter */}
         <View className="flex-row mb-6">
-          {['Tous', 'Live', 'À venir'].map((filter) => (
+          {['Tous', 'Live', 'À venir', 'Passé'].map((filter) => (
             <TouchableOpacity
               key={filter}
               onPress={() => setDateFilter(filter)}

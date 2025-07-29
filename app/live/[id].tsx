@@ -1,20 +1,49 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Dimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { WebView } from 'react-native-webview';
 import { ArrowLeft, Maximize, Minimize, Users, MessageCircle } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
-import { mockEvents } from '@/data/events';
+import { EventType } from '@/types';
+import { getEventById, toggleFavorite } from '@/services/api';
 
 export default function LiveStreamScreen() {
-  const { id } = useLocalSearchParams();
+const { id } = useLocalSearchParams<{ id: any }>();
   const router = useRouter();
   const { currentTheme, user, showNotification } = useApp();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [viewerCount] = useState(Math.floor(Math.random() * 1000) + 200);
-  
-  const event = mockEvents.find(e => e.id === parseInt(id as string));
+  const [event, setEvent] = useState<EventType | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+   
+  useEffect(() => {
+    const loadEvent = async () => {
+      if (!id) return;
+      
+      try {
+        const data = await getEventById(id);
+        setEvent(data);
+      } catch (error) {
+        showNotification('Erreur de chargement de l\'evénément !', 'error');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadEvent();
+   }, [id]);
+ 
+   if (isLoading) {
+     return (
+       <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+         <View className="flex-1 justify-center items-center">
+             <ActivityIndicator size="large" color="#8b5cf6" />
+         </View>
+       </SafeAreaView>
+     );
+   }
+ 
   const { width, height } = Dimensions.get('window');
   
   if (!event) {
@@ -31,7 +60,7 @@ export default function LiveStreamScreen() {
     );
   }
 
-  if (!user?.purchasedEvents.includes(event.id)) {
+  if (event.is_paid) {
     return (
       <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <View className="flex-1 justify-center items-center px-4">
@@ -79,12 +108,16 @@ export default function LiveStreamScreen() {
 
       {/* Video Player */}
       <View style={{ height: videoHeight }} className="relative">
-        <WebView
-          source={{ uri: event.streamUrl }}
-          style={{ flex: 1 }}
-          allowsFullscreenVideo
-          mediaPlaybackRequiresUserAction={false}
-        />
+        {event?.link  ? (
+          <WebView
+            source={{ uri: event?.link }}
+            style={{ flex: 1 }}
+            allowsFullscreenVideo
+            mediaPlaybackRequiresUserAction={false}
+          />
+        ) : (
+          <View className={'w-full h-64 bg-gray-900'} />
+        )}
         
         {/* Overlay Controls */}
         <View className="absolute top-4 right-4 flex-row">
