@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Dimensions, ActivityIndicator } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { WebView } from 'react-native-webview';
-import { ArrowLeft, Maximize, Minimize, Users, MessageCircle } from 'lucide-react-native';
+import { ArrowLeft, Maximize, Minimize, User } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import { EventType } from '@/types';
 import { getEventById, toggleFavorite } from '@/services/api';
@@ -13,7 +13,7 @@ const { id } = useLocalSearchParams<{ id: any }>();
   const router = useRouter();
   const { currentTheme, user, showNotification } = useApp();
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [viewerCount] = useState(Math.floor(Math.random() * 1000) + 200);
+  // const [viewerCount] = useState(Math.floor(Math.random() * 1000) + 200);
   const [event, setEvent] = useState<EventType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
    
@@ -32,17 +32,17 @@ const { id } = useLocalSearchParams<{ id: any }>();
     };
 
     loadEvent();
-   }, [id]);
- 
-   if (isLoading) {
-     return (
-       <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
-         <View className="flex-1 justify-center items-center">
-             <ActivityIndicator size="large" color="#8b5cf6" />
-         </View>
-       </SafeAreaView>
-     );
-   }
+  }, [id]);
+
+  if (isLoading) {
+    return (
+      <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <View className="flex-1 justify-center items-center">
+            <ActivityIndicator size="large" color="#8b5cf6" />
+        </View>
+      </SafeAreaView>
+    );
+  }
  
   const { width, height } = Dimensions.get('window');
   
@@ -87,6 +87,24 @@ const { id } = useLocalSearchParams<{ id: any }>();
     );
   }
 
+  const isLiveEvent = (event: any): boolean => {
+    const hasLink = !!event.link;
+
+    const eventDate = new Date(event.date);
+    const now = new Date();
+
+    // Jour identique
+    const isSameDay =
+      eventDate.getFullYear() === now.getFullYear() &&
+      eventDate.getMonth() === now.getMonth() &&
+      eventDate.getDate() === now.getDate();
+
+    // Heure déjà atteinte
+    const isTimePassed = eventDate <= now;
+
+    return hasLink && isSameDay && isTimePassed;
+  };
+  
   const videoHeight = isFullscreen ? height : 250;
 
   return (
@@ -98,6 +116,7 @@ const { id } = useLocalSearchParams<{ id: any }>();
           <TouchableOpacity onPress={() => router.back()} className="mr-3">
             <ArrowLeft size={24} color={currentTheme === 'dark' ? '#FFFFFF' : '#000000'} />
           </TouchableOpacity>
+
           <Text className={`font-montserrat-bold text-lg ${
             currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
           }`}>
@@ -134,10 +153,18 @@ const { id } = useLocalSearchParams<{ id: any }>();
         </View>
 
         {/* Live Indicator */}
-        <View className="absolute top-4 left-4 bg-red-500 px-3 py-1 rounded-full flex-row items-center">
+        {isLiveEvent(event) && (
+          <View className="absolute top-4 left-4 bg-red-500 px-3 py-1 rounded-full flex-row items-center">
+            <View className="w-2 h-2 bg-white rounded-full mr-2" />
+            <Text className="text-white font-montserrat-bold text-xs">LIVE</Text>
+          </View>
+        )}
+
+        <View className="absolute top-4 left-4 bg-gray-500 px-3 py-1 rounded-full flex-row items-center">
           <View className="w-2 h-2 bg-white rounded-full mr-2" />
-          <Text className="text-white font-montserrat-bold text-xs">LIVE</Text>
+          <Text className="text-white font-montserrat-bold text-xs">RÉDIFFUSION</Text>
         </View>
+        
       </View>
 
       {!isFullscreen && (
@@ -150,11 +177,11 @@ const { id } = useLocalSearchParams<{ id: any }>();
           </Text>
           
           <View className="flex-row items-center mb-4">
-            <Users size={16} color={currentTheme === 'dark' ? '#9CA3AF' : '#6B7280'} />
+            <User size={16} color={currentTheme === 'dark' ? '#9CA3AF' : '#6B7280'} />
             <Text className={`ml-2 font-montserrat text-sm ${
               currentTheme === 'dark' ? 'text-gray-400' : 'text-gray-600'
             }`}>
-              {viewerCount.toLocaleString()} spectateurs
+              Vous suivez en tant que spectateur
             </Text>
           </View>
 
@@ -162,26 +189,14 @@ const { id } = useLocalSearchParams<{ id: any }>();
           <View className={`flex-1 rounded-xl p-4 ${
             currentTheme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'
           }`}>
-            <View className="flex-row items-center mb-4">
-              <MessageCircle size={20} color={currentTheme === 'dark' ? '#E5E7EB' : '#374151'} />
-              <Text className={`ml-2 font-montserrat-bold ${
-                currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
-              }`}>
-                Chat en Direct
-              </Text>
-            </View>
             
+
             <View className="flex-1 justify-center items-center">
-              <MessageCircle size={48} color={currentTheme === 'dark' ? '#4B5563' : '#9CA3AF'} />
+
               <Text className={`font-montserrat text-center mt-4 ${
                 currentTheme === 'dark' ? 'text-gray-400' : 'text-gray-500'
               }`}>
-                Chat en développement
-              </Text>
-              <Text className={`font-montserrat text-xs text-center mt-2 ${
-                currentTheme === 'dark' ? 'text-gray-500' : 'text-gray-400'
-              }`}>
-                Bientôt disponible pour interagir avec les autres spectateurs
+                Profitez de vos moments des lives en direct
               </Text>
             </View>
           </View>

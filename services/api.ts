@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '@/contexts/AppContext';
 import { EventType, CategoryType, WishlistItem } from '@/types';
 import { API_URL } from '@/configs/index';
-import { router } from 'expo-router';
+
 
 // Events functions
 export const getEvents = async () => {
