@@ -103,7 +103,7 @@ const { id } = useLocalSearchParams<{ id: any }>();
 
   const handleAccess = () => {
     if (isPurchased) {
-      if (isLiveEvent(event)) {
+      if (!isLiveEvent(event)) {
         router.push(`/live/${event.id}`);
       } else {
         showNotification('Événement pas encore commencé', 'info');
@@ -254,7 +254,7 @@ const { id } = useLocalSearchParams<{ id: any }>();
             onPress={handleAccess}
             className={`py-4 px-6 rounded-xl ${
               isPurchased 
-                ? isLiveEvent(event) 
+                ? !isLiveEvent(event) 
                   ? 'bg-green-500' 
                   : 'bg-gray-400'
                 : 'bg-primary-500'
@@ -262,7 +262,7 @@ const { id } = useLocalSearchParams<{ id: any }>();
           >
             <View className="flex-row items-center justify-center">
               {isPurchased ? (
-                isLiveEvent(event) ? (
+                !isLiveEvent(event) ? (
                   <>
                     <Play size={20} color="#FFFFFF" />
                     <Text className="ml-2 font-montserrat-bold text-white text-lg">
