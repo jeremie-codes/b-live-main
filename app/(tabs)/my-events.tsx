@@ -4,8 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Heart, ShoppingCart } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
-import MyEventCard from '@/components/MyEventCard';
 import TicketItem from '@/components/TicketItem';
+import PlaceHolder from '@/components/PlaceHolde';
 import { TicketType } from '@/types';
 import { getUserEvents } from '@/services/api';
 
@@ -49,9 +49,19 @@ export default function MyEventScreen() {
   if (isLoading) {
     return (
       <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#8b5cf6" />
+        <View className="px-4 pt-4">
+          <Text className={`font-montserrat-bold text-2xl mb-2 ${
+            currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
+          }`}>
+            Mes Événements
+          </Text>
         </View>
+
+        <View className="flex-1 px-4 pt-10">
+          {['','',''].map(()=> (<PlaceHolder />))}
+        </View>
+
+        <ActivityIndicator className='relative -top-6' size={'large'} />
       </SafeAreaView>
     );
   }
@@ -104,11 +114,6 @@ export default function MyEventScreen() {
           <View className="px-4">
             {myEvent.map((event) => (
               <View className="px4">
-                {/* <MyEventCard
-                  key={event.id}
-                  event={event}
-                  onPress={() => router.push(`/event/${event.id}`)}
-                /> */}
                 <TicketItem key={event.id} ticket={event} />
               </View>
             ))}

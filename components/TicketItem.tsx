@@ -89,7 +89,7 @@ export default function TicketItem({ ticket }: TicketItemProps) {
 
           <View className='ml-2'>
             <View className="flex-row gap-3 justify-between items-center mb-3">
-              <Text className="text-white font-['Montserrat-Bold'] text-lg">
+              <Text className={` font-['Montserrat-Bold'] text-lg ${currentTheme == 'dark' ? 'text-white': 'text-gray-800'}`}>
                 {ticket?.event?.title.slice(0, 13)}...
               </Text>
 
@@ -102,14 +102,14 @@ export default function TicketItem({ ticket }: TicketItemProps) {
 
             <View className="flex-row items-center mb-2">
               <Calendar size={14} color={currentTheme === 'dark' ? '#d1d5db' : '#111827'} className="mr-2" />
-              <Text className="text-gray-300 font-['Montserrat-Regular']">
+              <Text className={`${currentTheme == 'dark' ? 'text-gray-300': 'text-gray-800'} font-['Montserrat-Regular']`}>
                 { ' ' + formatDate(ticket.event.date)}
               </Text>
             </View>
 
             <View className="flex-row items-center">
               <Clock size={14} color={currentTheme === 'dark' ? '#d1d5db' : '#111827'} className="mr-2" />
-              <Text className="text-gray-300 font-['Montserrat-Regular']">
+              <Text className={`${currentTheme == 'dark' ? 'text-gray-300': 'text-gray-800'} font-['Montserrat-Regular']`}>
                 { ' ' + formatTime(ticket.event.date)}
               </Text>
             </View>
