@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, Image, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Zap, TrendingUp, TrendingDown } from 'lucide-react-native';
@@ -10,32 +10,21 @@ import { EventType } from '@/types';
 import CategoryFilter from '@/components/CategoryFilter';
 
 export default function HomeScreen() {
-  const { currentTheme, showNotification } = useApp();
+  const { currentTheme, user, showNotification } = useApp();
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState('Tous');
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [data, setData] = useState<EventType[]>([]);
 
-  const isLiveEvent = (event: any): boolean => {
-    const hasLink = !!event.link;
+  const isLiveEvent = (event: EventType): boolean => {
+    const isStarted = event?.is_started === 1;
+    const isLive = event?.is_live === 1;
 
-    const eventDate = new Date(event.date);
-    const now = new Date();
-
-    // Jour identique
-    const isSameDay =
-      eventDate.getFullYear() === now.getFullYear() &&
-      eventDate.getMonth() === now.getMonth() &&
-      eventDate.getDate() === now.getDate();
-
-    // Heure déjà atteinte
-    const isTimePassed = eventDate <= now;
-
-    return hasLink && isSameDay && isTimePassed;
+    return isStarted || isLive;
   };
 
-  const isUpcomingEvent = (event: any): boolean => {
+  const isUpcomingEvent = (event: EventType): boolean => {
     const eventDate = new Date(event.date);
     const today = new Date();
 
@@ -46,14 +35,22 @@ export default function HomeScreen() {
     return eventOnlyDate > todayOnlyDate;
   };
 
-  const isOldEvent = (event: any): boolean => {
+  const isOldEvent = (event: EventType): boolean => {
     const eventDate = new Date(event.date);
-    const today = new Date();
+    const now = new Date();
 
+    const eventTime = eventDate.getTime();
+    const nowTime = now.getTime();
+
+    // On extrait uniquement la date sans l’heure
     const eventOnlyDate = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
-    const todayOnlyDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const todayOnlyDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    return eventOnlyDate < todayOnlyDate;
+    const isBeforeToday = eventOnlyDate < todayOnlyDate;
+    const isTodayButPast = eventOnlyDate.getTime() === todayOnlyDate.getTime() && eventTime < nowTime;
+    const isFinished = event?.is_finished === 1;
+
+    return isBeforeToday || isTodayButPast || isFinished;
   };
 
   const filteredEvents = selectedCategory === 'Tous' 
@@ -79,6 +76,7 @@ export default function HomeScreen() {
   };
 
   useEffect(() => {
+    console.log(user?.id)
     loadEvents();
   }, []);
 
@@ -86,8 +84,7 @@ export default function HomeScreen() {
     setRefreshing(true);
     loadEvents();
   };
-
-
+  
   return (
     <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <ScrollView showsVerticalScrollIndicator={false}
@@ -149,10 +146,16 @@ export default function HomeScreen() {
           </View>
         )}
 
+        {isLoading && (
+          <View className="flex-1 justify-center items-center">
+            <ActivityIndicator size="large" color="#8b5cf6" />
+          </View>
+        )}
+
         {upcomingEvents.length > 0 && (
           <View className="mb-6">
             <View className="flex-row items-center px-4 mb-4">
-              <TrendingUp size={20} color="#EAB308" />
+              <TrendingUp size={20} color="#fdba74" />
               <Text className={`ml-2 font-montserrat-bold text-lg ${
                 currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
               }`}>
@@ -179,7 +182,7 @@ export default function HomeScreen() {
               <Text className={`ml-2 font-montserrat-bold text-lg ${
                 currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
               }`}>
-                Événements Passés
+                Événements Terminés
               </Text>
             </View>
             

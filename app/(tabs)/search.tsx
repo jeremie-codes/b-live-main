@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, Filter, Calendar } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -17,26 +17,16 @@ export default function SearchScreen() {
   const [selectedCategory, setSelectedCategory] = useState('Tous');
   const [dateFilter, setDateFilter] = useState('Tous');
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const isLiveEvent = (event: any): boolean => {
-    const hasLink = !!event.link;
+  const isLiveEvent = (event: EventType): boolean => {
+    const isStarted = event?.is_started === 1;
+    const isLive = event?.is_live === 1;
 
-    const eventDate = new Date(event.date);
-    const now = new Date();
-
-    // Jour identique
-    const isSameDay =
-      eventDate.getFullYear() === now.getFullYear() &&
-      eventDate.getMonth() === now.getMonth() &&
-      eventDate.getDate() === now.getDate();
-
-    // Heure déjà atteinte
-    const isTimePassed = eventDate <= now;
-
-    return hasLink && isSameDay && isTimePassed;
+    return isStarted || isLive;
   };
-  
-  const isUpcomingEvent = (event: any): boolean => {
+
+  const isUpcomingEvent = (event: EventType): boolean => {
     const eventDate = new Date(event.date);
     const today = new Date();
 
@@ -46,15 +36,23 @@ export default function SearchScreen() {
 
     return eventOnlyDate > todayOnlyDate;
   };
-  
-  const isOldEvent = (event: any): boolean => {
+
+  const isOldEvent = (event: EventType): boolean => {
     const eventDate = new Date(event.date);
-    const today = new Date();
+    const now = new Date();
 
+    const eventTime = eventDate.getTime();
+    const nowTime = now.getTime();
+
+    // On extrait uniquement la date sans l’heure
     const eventOnlyDate = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
-    const todayOnlyDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const todayOnlyDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    return eventOnlyDate < todayOnlyDate;
+    const isBeforeToday = eventOnlyDate < todayOnlyDate;
+    const isTodayButPast = eventOnlyDate.getTime() === todayOnlyDate.getTime() && eventTime < nowTime;
+    const isFinished = event?.is_finished === 1;
+
+    return isBeforeToday || isTodayButPast || isFinished;
   };
   
   const filteredEvents = data.filter(event => {
@@ -69,14 +67,6 @@ export default function SearchScreen() {
     return matchesSearch && matchesCategory && matchesDate;
   });
   
-  // const filteredEvents = selectedCategory === 'Tous' 
-  //   ? data
-  //   : data.filter(event => event.category.name === selectedCategory);
-
-  const liveEvents = filteredEvents.filter(event => isLiveEvent(event));
-  const upcomingEvents = filteredEvents.filter(event => isUpcomingEvent(event));
-  const oldEvents = filteredEvents.filter(event => isOldEvent(event));
-
   const loadEvents = async () => {
     try {
       const data = await getEvents();
@@ -87,12 +77,18 @@ export default function SearchScreen() {
       showNotification('Chargement des événements échoué !', 'error');
     } finally {
       setIsLoading(false);
+      setRefreshing(false);
     }
   };
 
   useEffect(() => {
     loadEvents();
   }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadEvents();
+  };
 
   return (
     <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
@@ -155,7 +151,15 @@ export default function SearchScreen() {
         </View>
       </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#8b5cf6"
+            colors={["#8b5cf6"]}
+          />
+        }>
         <View className="px-4">
           <Text className={`font-montserrat-medium text-sm mb-4 ${
             currentTheme === 'dark' ? 'text-gray-400' : 'text-gray-600'
@@ -170,6 +174,12 @@ export default function SearchScreen() {
               onPress={() => router.push(`/event/${event.id}`)}
             />
           ))}
+
+          {isLoading && (
+            <View className="flex-1 justify-center items-center">
+              <ActivityIndicator size="large" color="#8b5cf6" />
+            </View>
+          )}
 
           {filteredEvents.length === 0 && (
             <View className="py-8 items-center">

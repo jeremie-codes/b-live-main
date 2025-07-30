@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Heart, ShoppingCart } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
-import EventCard from '@/components/EventCard';
+import MyEventCard from '@/components/MyEventCard';
 import { EventType } from '@/types';
 import { getFavorites, toggleFavorite } from '@/services/api';
 
@@ -12,14 +12,13 @@ export default function FavorisScreen() {
   const { currentTheme, user, favoriteRefreshKey, showNotification } = useApp();
   const [favoris, setFavorites] = useState<EventType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  
   const router = useRouter();
-
-
+  
   const loadFavorites = async () => {
     try { 
       const data = await getFavorites();
-
-      console.log(data)
       setFavorites(Array.isArray(data) ? data : [])
     } catch (error) {
       showNotification('Erreur lors du chargement de favoris', 'error');
@@ -32,6 +31,11 @@ export default function FavorisScreen() {
     loadFavorites();
   }, [favoriteRefreshKey]);
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadFavorites();
+    setRefreshing(false);
+  };
       
   if (isLoading) {
     return (
@@ -63,13 +67,22 @@ export default function FavorisScreen() {
     );
   }
 
-  // const favorisEvents = mockEvents.filter(event => 
-  //   user.favoris.includes(event.id)
-  // );
+  const unFavoris = async (eventId: number) => {
+    await toggleFavorite(eventId, true);
+    setFavorites((prevFavorites) => prevFavorites.filter((event) => event.id !== eventId));
+  };
 
   return (
     <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#8b5cf6"
+            colors={["#8b5cf6"]}
+          />
+        }>
         <View className="px-4 pt-4">
           <Text className={`font-montserrat-bold text-2xl mb-2 ${
             currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
@@ -86,9 +99,11 @@ export default function FavorisScreen() {
         {favoris.length > 0 ? (
           <View className="px-4">
             {favoris.map((event) => (
-              <EventCard
+              <MyEventCard
                 key={event.id}
                 event={event}
+                favoris={true}
+                unFavoris={unFavoris}
                 onPress={() => router.push(`/event/${event.id}`)}
               />
             ))}

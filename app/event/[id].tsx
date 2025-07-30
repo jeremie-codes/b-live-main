@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowLeft, Calendar, Users, DollarSign, Play, Clock, Heart } from 'lucide-react-native';
@@ -15,22 +15,24 @@ const { id } = useLocalSearchParams<{ id: any }>();
   const [isLoading, setIsLoading] = useState(true);
   const [isInFavorite, setIsFavorite] = useState(false);
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   
-  useEffect(() => {
-    const loadEvent = async () => {
-      if (!id) return;
-      
-      try {
-        const data = await getEventById(id);
-        setEvent(data);
-        setIsFavorite(data.is_favorite);
-      } catch (error) {
-        showNotification('Erreur de chargement de l\'evénément !', 'error');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const loadEvent = async () => {
+    if (!id) return;
+    
+    try {
+      const data = await getEventById(id);
+      setEvent(data);
+      setIsFavorite(data.is_favorite);
+    } catch (error) {
+      showNotification('Erreur de chargement de l\'evénément !', 'error');
+    } finally {
+      setIsLoading(false);
+      setRefreshing(false);
+    }
+  };
 
+  useEffect(() => {
     loadEvent();
   }, [id]);
 
@@ -67,8 +69,8 @@ const { id } = useLocalSearchParams<{ id: any }>();
     );
   }
 
-  const isPurchased = true; // event?.is_paid || null
-  // const isPurchased = event?.is_paid || null
+  const isPurchased = false; // event?.is_paid || null
+  
   const mediaUrl = event?.media?.[1]?.original_url || event?.media?.[0]?.original_url || null;
 
   const formatDate = (dateString: string) => {
@@ -83,27 +85,34 @@ const { id } = useLocalSearchParams<{ id: any }>();
     });
   };
 
-  const isLiveEvent = (event: any): boolean => {
-    const hasLink = !!event.link;
+  const isLiveEvent = (event: EventType): boolean => {
+    const isStarted = event?.is_started === 1;
+    const isLive = event?.is_live === 1;
 
+    return isStarted || isLive;
+  };
+
+  const isOldEvent = (event: EventType): boolean => {
     const eventDate = new Date(event.date);
     const now = new Date();
 
-    // Jour identique
-    const isSameDay =
-      eventDate.getFullYear() === now.getFullYear() &&
-      eventDate.getMonth() === now.getMonth() &&
-      eventDate.getDate() === now.getDate();
+    const eventTime = eventDate.getTime();
+    const nowTime = now.getTime();
 
-    // Heure déjà atteinte
-    const isTimePassed = eventDate <= now;
+    // On extrait uniquement la date sans l’heure
+    const eventOnlyDate = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+    const todayOnlyDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    return hasLink && isSameDay && isTimePassed;
+    const isBeforeToday = eventOnlyDate < todayOnlyDate;
+    const isTodayButPast = eventOnlyDate.getTime() === todayOnlyDate.getTime() && eventTime < nowTime;
+    const isFinished = event?.is_finished === 1;
+
+    return isBeforeToday || isTodayButPast || isFinished;
   };
 
   const handleAccess = () => {
     if (isPurchased) {
-      if (!isLiveEvent(event)) {
+      if (isLiveEvent(event) || isOldEvent(event)) {
         router.push(`/live/${event.id}`);
       } else {
         showNotification('Événement pas encore commencé', 'info');
@@ -134,6 +143,11 @@ const { id } = useLocalSearchParams<{ id: any }>();
       setIsTogglingFavorite(false);
     }
 
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadEvent();
   };
 
   return (
@@ -168,7 +182,15 @@ const { id } = useLocalSearchParams<{ id: any }>();
         </TouchableOpacity>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#8b5cf6"
+            colors={["#8b5cf6"]}
+          />
+        }>
         {/* Event Image */}
         <View className="relative">
           {mediaUrl ? (
@@ -221,7 +243,7 @@ const { id } = useLocalSearchParams<{ id: any }>();
             </View>
             
             <View className="flex-row items-center mb-3">
-              <DollarSign size={20} color="#EAB308" />
+              <DollarSign size={20} color="#fdba74" />
               <Text className={`ml-3 font-montserrat-bold text-primary-500`}>
                 {event.price} {event.currency}
               </Text>
@@ -232,7 +254,7 @@ const { id } = useLocalSearchParams<{ id: any }>();
               <Text className={`ml-3 font-montserrat ${
                 currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-700'
               }`}>
-                {Math.floor(Math.random() * 500) + 100} participants
+                Rejoignez d'autres participants
               </Text>
             </View>
           </View>
@@ -240,12 +262,12 @@ const { id } = useLocalSearchParams<{ id: any }>();
           {/* Status and Action */}
           {isPurchased && (
             <View className={`rounded-xl p-4 mb-4 ${
-              isLiveEvent(event) ? 'bg-green-100 border border-green-200' : 'bg-blue-100 border border-blue-200'
+              isLiveEvent(event) || isOldEvent(event) ? 'bg-green-100 border border-green-200' : 'bg-blue-100 border border-blue-200'
             }`}>
               <Text className={`font-montserrat-semibold ${
-                isLiveEvent(event) ? 'text-green-800' : 'text-blue-800'
+                isLiveEvent(event) || isOldEvent(event) ? 'text-green-800' : 'text-blue-800'
               }`}>
-                {isLiveEvent(event) ? '✅ Accès autorisé - En direct' : '📅 Accès autorisé - Programmé'}
+                {isLiveEvent(event) || isOldEvent(event) ? '✅ Accès autorisé - En direct' : '📅 Accès autorisé - Programmé'}
               </Text>
             </View>
           )}
@@ -254,7 +276,7 @@ const { id } = useLocalSearchParams<{ id: any }>();
             onPress={handleAccess}
             className={`py-4 px-6 rounded-xl ${
               isPurchased 
-                ? !isLiveEvent(event) 
+                ? isLiveEvent(event) || isOldEvent(event)
                   ? 'bg-green-500' 
                   : 'bg-gray-400'
                 : 'bg-primary-500'
@@ -262,7 +284,7 @@ const { id } = useLocalSearchParams<{ id: any }>();
           >
             <View className="flex-row items-center justify-center">
               {isPurchased ? (
-                !isLiveEvent(event) ? (
+                isLiveEvent(event) || isOldEvent(event) ? (
                   <>
                     <Play size={20} color="#FFFFFF" />
                     <Text className="ml-2 font-montserrat-bold text-white text-lg">

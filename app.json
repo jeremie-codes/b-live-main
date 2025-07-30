@@ -17,7 +17,9 @@
       "favicon": "./assets/images/icon-app.png"
     },
     "plugins": [
-      "expo-router", "expo-font", "expo-web-browser",
+      "expo-router",
+      "expo-font",
+      "expo-web-browser",
       [
         "expo-splash-screen",
         {
@@ -29,6 +31,13 @@
           },
           "resizeMode": "contain",
           "imageWidth": 200
+        }
+      ],
+      [
+        "expo-video",
+        {
+          "supportsBackgroundPlayback": true,
+          "supportsPictureInPicture": true
         }
       ]
     ],

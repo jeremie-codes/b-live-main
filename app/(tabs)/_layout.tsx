@@ -18,7 +18,7 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle,
-        tabBarActiveTintColor: '#EAB308',
+        tabBarActiveTintColor: '#fdba74',
         tabBarInactiveTintColor: currentTheme === 'dark' ? '#9CA3AF' : '#6B7280',
         tabBarLabelStyle: {
           fontFamily: 'Montserrat-Medium',

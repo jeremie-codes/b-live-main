@@ -24,25 +24,13 @@ export default function EventCard({ event, onPress }: EventCardProps) {
     });
   };
 
-  const isLiveEvent = (event: any): boolean => {
-    const hasLink = !!event.link;
+  const isLiveEvent = (event: EventType): boolean => {
+    const isStarted = event?.is_started === 1;
+    const isLive = event?.is_live === 1;
 
-    const eventDate = new Date(event.date);
-    const now = new Date();
-
-    // Jour identique
-    const isSameDay =
-      eventDate.getFullYear() === now.getFullYear() &&
-      eventDate.getMonth() === now.getMonth() &&
-      eventDate.getDate() === now.getDate();
-
-    // Heure déjà atteinte
-    const isTimePassed = eventDate <= now;
-
-    return hasLink && isSameDay && isTimePassed;
+    return isStarted || isLive;
   };
-
-
+  
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -102,7 +90,7 @@ export default function EventCard({ event, onPress }: EventCardProps) {
           <View className="flex-row items-center">
             {/* <DollarSign 
               size={16} 
-              color="#EAB308" 
+              color="#fdba74" 
             /> */}
             <Text className="ml-1 font-montserrat-bold text-primary-500">
               {event.price} {event.currency}

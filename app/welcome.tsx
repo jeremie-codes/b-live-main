@@ -55,7 +55,7 @@ export default function WelcomeScreen() {
                 <View className={`w-12 h-12 rounded-full items-center justify-center mr-4 ${
                   currentTheme === 'dark' ? 'bg-gray-800' : 'bg-white'
                 } shadow-sm`}>
-                  <feature.icon size={24} color="#EAB308" />
+                  <feature.icon size={24} color="#fdba74" />
                 </View>
                 <View className="flex-1">
                   <Text className={`font-montserrat-semibold text-base mb-1 ${

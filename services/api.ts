@@ -103,13 +103,13 @@ export const getCategories = async () => {
 };
 
 // Tickets functions
-export const getUserTickets = async () => {
+export const getUserEvents = async (page: number | null) => {
   try {
 
-    const response = await axios.get(`${API_URL}/tickets`);
+    const response = await axios.get(`${API_URL}/tickets?page=${page ? page : 1}`);
     const { data } = response.data;
         
-    return data.data;
+    return data;
   } catch (error: any) {
     console.log(error.response?.data?.message || 'Loading failed');
   }

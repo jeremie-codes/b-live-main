@@ -2,21 +2,24 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { WebView } from 'react-native-webview';
+import { useEventListener } from 'expo';
 import { ArrowLeft, Maximize, Minimize, User } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import { EventType } from '@/types';
 import { getEventById, toggleFavorite } from '@/services/api';
+import { useVideoPlayer, VideoView } from 'expo-video';
 
 export default function LiveStreamScreen() {
 const { id } = useLocalSearchParams<{ id: any }>();
   const router = useRouter();
-  const { currentTheme, user, showNotification } = useApp();
+  const { currentTheme, showNotification } = useApp();
   const [isFullscreen, setIsFullscreen] = useState(false);
-  // const [viewerCount] = useState(Math.floor(Math.random() * 1000) + 200);
+
   const [event, setEvent] = useState<EventType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-   
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [loadingState, setLoadingState] = useState<string | null>(null);
+
   useEffect(() => {
     const loadEvent = async () => {
       if (!id) return;
@@ -24,6 +27,10 @@ const { id } = useLocalSearchParams<{ id: any }>();
       try {
         const data = await getEventById(id);
         setEvent(data);
+        
+        const muxId = data.link.split('/').pop(); // Récupère uniquement l’ID
+        const hlsUrl = `https://stream.mux.com/${muxId}.m3u8`;
+        setVideoUrl(hlsUrl);
       } catch (error) {
         showNotification('Erreur de chargement de l\'evénément !', 'error');
       } finally {
@@ -34,6 +41,19 @@ const { id } = useLocalSearchParams<{ id: any }>();
     loadEvent();
   }, [id]);
 
+  const player = useVideoPlayer(videoUrl || '', (player) => {
+    player.loop = true;
+    player.play();
+  });
+
+  useEventListener(player, 'statusChange', ({ status, error }) => {
+    setLoadingState(status);
+
+    if (error) {
+      console.error('Player error:', error);
+      showNotification('Erreur de lecture de la vidéo', 'error');
+    }
+  });
   if (isLoading) {
     return (
       <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
@@ -87,22 +107,11 @@ const { id } = useLocalSearchParams<{ id: any }>();
     );
   }
 
-  const isLiveEvent = (event: any): boolean => {
-    const hasLink = !!event.link;
+  const isLiveEvent = (event: EventType): boolean => {
+    const isStarted = event?.is_started === 1;
+    const isLive = event?.is_live === 1;
 
-    const eventDate = new Date(event.date);
-    const now = new Date();
-
-    // Jour identique
-    const isSameDay =
-      eventDate.getFullYear() === now.getFullYear() &&
-      eventDate.getMonth() === now.getMonth() &&
-      eventDate.getDate() === now.getDate();
-
-    // Heure déjà atteinte
-    const isTimePassed = eventDate <= now;
-
-    return hasLink && isSameDay && isTimePassed;
+    return isStarted || isLive;
   };
   
   const videoHeight = isFullscreen ? height : 250;
@@ -127,19 +136,33 @@ const { id } = useLocalSearchParams<{ id: any }>();
 
       {/* Video Player */}
       <View style={{ height: videoHeight }} className="relative">
-        {event?.link  ? (
-          <WebView
-            source={{ uri: event?.link }}
-            style={{ flex: 1 }}
-            allowsFullscreenVideo
-            mediaPlaybackRequiresUserAction={false}
+        {event?.link ? (
+        <>
+          <VideoView
+            style={{ width: '100%', height: '100%' }}
+            player={player}
+            allowsFullscreen
+            allowsPictureInPicture
           />
-        ) : (
-          <View className={'w-full h-64 bg-gray-900'} />
-        )}
+          {!loadingState || loadingState === 'loading' && (
+            <View
+              style={{
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'rgba(0,0,0,0.3)',
+              }}
+              className='inset-0 absolute flex-1'
+            >
+              <ActivityIndicator size="large" color="#fff" />
+            </View>
+          )}
+        </>
+      ) : (
+        <View style={{ width: '100%', height: 300, backgroundColor: '#111' }} />
+      )}
         
         {/* Overlay Controls */}
-        <View className="absolute top-4 right-4 flex-row">
+        {/* <View className="absolute top-4 right-4 flex-row">
           <TouchableOpacity
             onPress={() => setIsFullscreen(!isFullscreen)}
             className="bg-black/50 p-2 rounded-lg mr-2"
@@ -150,20 +173,22 @@ const { id } = useLocalSearchParams<{ id: any }>();
               <Maximize size={20} color="#FFFFFF" />
             )}
           </TouchableOpacity>
-        </View>
+        </View> */}
 
         {/* Live Indicator */}
         {isLiveEvent(event) && (
-          <View className="absolute top-4 left-4 bg-red-500 px-3 py-1 rounded-full flex-row items-center">
+          <View className="absolute top-8 left-4 bg-red-500 px-3 py-1 rounded-full flex-row items-center">
             <View className="w-2 h-2 bg-white rounded-full mr-2" />
             <Text className="text-white font-montserrat-bold text-xs">LIVE</Text>
           </View>
         )}
 
-        <View className="absolute top-4 left-4 bg-gray-500 px-3 py-1 rounded-full flex-row items-center">
-          <View className="w-2 h-2 bg-white rounded-full mr-2" />
-          <Text className="text-white font-montserrat-bold text-xs">RÉDIFFUSION</Text>
-        </View>
+        {!isLiveEvent(event) && (
+          <View className="absolute top-8 left-4 bg-gray-500 px-3 py-1 rounded-full flex-row items-center">
+            <View className="w-2 h-2 bg-white rounded-full mr-2" />
+            <Text className="text-white font-montserrat-bold text-xs">RÉDIFFUSION</Text>
+          </View>
+        )}
         
       </View>
 
@@ -177,7 +202,7 @@ const { id } = useLocalSearchParams<{ id: any }>();
           </Text>
           
           <View className="flex-row items-center mb-4">
-            <User size={16} color={currentTheme === 'dark' ? '#9CA3AF' : '#6B7280'} />
+            <User size={16} color={'#22c55e'} />
             <Text className={`ml-2 font-montserrat text-sm ${
               currentTheme === 'dark' ? 'text-gray-400' : 'text-gray-600'
             }`}>
