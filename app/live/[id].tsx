@@ -43,7 +43,7 @@ const { id } = useLocalSearchParams<{ id: any }>();
 
   const player = useVideoPlayer(videoUrl || '', (player) => {
     player.loop = true;
-    player.play();
+    if(event?.is_paid && event?.is_live) player.play();
   });
 
   useEventListener(player, 'statusChange', ({ status, error }) => {
@@ -80,7 +80,7 @@ const { id } = useLocalSearchParams<{ id: any }>();
     );
   }
 
-  if (event.is_paid) {
+  if (!event.is_paid) {
     return (
       <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <View className="flex-1 justify-center items-center px-4">
@@ -108,8 +108,8 @@ const { id } = useLocalSearchParams<{ id: any }>();
   }
 
   const isLiveEvent = (event: EventType): boolean => {
-    const isStarted = event?.is_started === 1;
-    const isLive = event?.is_live === 1;
+    const isStarted = event?.is_started;
+    const isLive = event?.is_live;
 
     return isStarted || isLive;
   };

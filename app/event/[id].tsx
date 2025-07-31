@@ -8,7 +8,7 @@ import { getEventById, toggleFavorite } from '@/services/api';
 import { EventType } from '@/types';
 
 export default function EventDetailScreen() {
-const { id } = useLocalSearchParams<{ id: any }>();
+  const { id } = useLocalSearchParams<{ id: any }>();
   const router = useRouter();
   const { currentTheme, user, showNotification, triggerAddToFavoriteRefresh } = useApp();
   const [event, setEvent] = useState<EventType | null>(null);
@@ -69,7 +69,7 @@ const { id } = useLocalSearchParams<{ id: any }>();
     );
   }
 
-  const isPurchased = false; // event?.is_paid || null
+  const isPurchased = event?.is_paid || null
   
   const mediaUrl = event?.media?.[1]?.original_url || event?.media?.[0]?.original_url || null;
 
@@ -86,10 +86,11 @@ const { id } = useLocalSearchParams<{ id: any }>();
   };
 
   const isLiveEvent = (event: EventType): boolean => {
-    const isStarted = event?.is_started === 1;
-    const isLive = event?.is_live === 1;
+    const isStarted = event?.is_started;
+    const isLive = event?.is_live;
 
     return isStarted || isLive;
+    // return true;
   };
 
   const isOldEvent = (event: EventType): boolean => {
@@ -105,7 +106,7 @@ const { id } = useLocalSearchParams<{ id: any }>();
 
     const isBeforeToday = eventOnlyDate < todayOnlyDate;
     const isTodayButPast = eventOnlyDate.getTime() === todayOnlyDate.getTime() && eventTime < nowTime;
-    const isFinished = event?.is_finished === 1;
+    const isFinished = event?.is_finished;
 
     return isBeforeToday || isTodayButPast || isFinished;
   };

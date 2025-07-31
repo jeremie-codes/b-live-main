@@ -28,8 +28,8 @@ export default function EventCard({ event, onPress, favoris, unFavoris, paid }: 
   };
 
   const isLiveEvent = (event: EventType): boolean => {
-    const isStarted = event?.is_started === 1;
-    const isLive = event?.is_live === 1;
+    const isStarted = event?.is_started;
+    const isLive = event?.is_live;
 
     return isStarted || isLive;
   };

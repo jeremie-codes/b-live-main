@@ -87,11 +87,11 @@ export interface EventType {
   time_end: string;
   max_ticket: number;
   currency: string;
-  is_paid: number;
-  is_started: number;
-  is_finished: number;
-  is_live: number;
-  is_cancelled: number;
+  is_paid: boolean;
+  is_started: boolean;
+  is_finished: boolean;
+  is_live: boolean;
+  is_cancelled: boolean;
   image: string | null;
   author_name: string;
   author_picture: string | null;

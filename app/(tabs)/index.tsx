@@ -18,8 +18,8 @@ export default function HomeScreen() {
   const [data, setData] = useState<EventType[]>([]);
 
   const isLiveEvent = (event: EventType): boolean => {
-    const isStarted = event?.is_started === 1;
-    const isLive = event?.is_live === 1;
+    const isStarted = event?.is_started;
+    const isLive = event?.is_live;
 
     return isStarted || isLive;
   };
@@ -48,7 +48,7 @@ export default function HomeScreen() {
 
     const isBeforeToday = eventOnlyDate < todayOnlyDate;
     const isTodayButPast = eventOnlyDate.getTime() === todayOnlyDate.getTime() && eventTime < nowTime;
-    const isFinished = event?.is_finished === 1;
+    const isFinished = event?.is_finished;
 
     return isBeforeToday || isTodayButPast || isFinished;
   };
