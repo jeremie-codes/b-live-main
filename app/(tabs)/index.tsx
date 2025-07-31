@@ -98,8 +98,8 @@ export default function HomeScreen() {
         }>
           
         <View className="flex-row items-center justify-between px-4 py-6 ">
-          <View className='w-20 h-12 '>
-            <Image source={require('@/assets/images/blive.png')} className='w-full h-full object-contain' />
+          <View className='w-24' style={{ height: 50 }}>
+            <Image source={require('@/assets/images/bliveo.png')} className='w-full h-full object-contain' />
           </View>
 
           <View className='' >
