@@ -8,13 +8,29 @@
     "scheme": "b-live",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.blives.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "versionCode": 1,
+      "package": "com.blives.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icons.png",
+        "backgroundColor": "#13f28c"
+      }
     },
     "web": {
       "bundler": "metro",
       "output": "single",
-      "favicon": "./assets/images/icon-app.png"
+      "favicon": "./assets/images/icons.png"
     },
     "plugins": [
       "expo-router",
@@ -24,9 +40,9 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#222222",
-          "image": "./assets/images/splashs.png",
+          "image": "./assets/images/icons.png",
           "dark": {
-            "image": "./assets/images/splashs.png",
+            "image": "./assets/images/icons.png",
             "backgroundColor": "#13f28c"
           },
           "resizeMode": "contain",
@@ -43,6 +59,11 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "a278a74e-efbd-4986-bd91-969c60ed1754"
+      }
     }
   }
 }
