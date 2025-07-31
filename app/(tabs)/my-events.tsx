@@ -58,7 +58,7 @@ export default function MyEventScreen() {
         </View>
 
         <View className="flex-1 px-4 pt-10">
-          {['','',''].map(()=> (<PlaceHolder />))}
+          {['','',''].map((v, i)=> (<PlaceHolder key={i} />))}
         </View>
 
         <ActivityIndicator className='relative -top-6' size={'large'} />

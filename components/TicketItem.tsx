@@ -49,9 +49,7 @@ export default function TicketItem({ ticket }: TicketItemProps) {
     }
   };
 
-  useEffect(() => {
-    console.log(ticket)
-    
+  useEffect(() => {    
     if ( ticket.success === null) {
       setState('en attente');
     } else if (ticket.success) {
@@ -132,14 +130,14 @@ export default function TicketItem({ ticket }: TicketItemProps) {
           </Text>
         </View>
 
-        <TouchableOpacity
+        {ticket.success && <TouchableOpacity
           className={`px-4 py-2 rounded-lg border border-orange-400`}
           onPress={handlePress}
         >
           <Text className="text-orange-300 font-['Montserrat-SemiBold']">
             Voir l'événement
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity>}
       </View>
     </TouchableOpacity>
   );
