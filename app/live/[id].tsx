@@ -135,7 +135,7 @@ const { id } = useLocalSearchParams<{ id: any }>();
       )}
 
       {/* Video Player */}
-      <View style={{ height: videoHeight }} className="relative">
+      <View style={{ height: videoHeight }} className="relative flex-1 flex-row justify-center items-center">
         {event?.link ? (
         <>
           <VideoView
@@ -157,23 +157,11 @@ const { id } = useLocalSearchParams<{ id: any }>();
             </View>
           )}
         </>
-      ) : (
-        <View style={{ width: '100%', height: 300, backgroundColor: '#111' }} />
-      )}
+        ) : (
+          <View style={{ width: '100%', height: 300, backgroundColor: '#111' }} />
+        )}
         
         {/* Overlay Controls */}
-        {/* <View className="absolute top-4 right-4 flex-row">
-          <TouchableOpacity
-            onPress={() => setIsFullscreen(!isFullscreen)}
-            className="bg-black/50 p-2 rounded-lg mr-2"
-          >
-            {isFullscreen ? (
-              <Minimize size={20} color="#FFFFFF" />
-            ) : (
-              <Maximize size={20} color="#FFFFFF" />
-            )}
-          </TouchableOpacity>
-        </View> */}
 
         {/* Live Indicator */}
         {isLiveEvent(event) && (
@@ -192,8 +180,7 @@ const { id } = useLocalSearchParams<{ id: any }>();
         
       </View>
 
-      {!isFullscreen && (
-        <View className="flex-1 p-4">
+      <View className="p-4 h-36">
           {/* Event Info */}
           <Text className={`font-montserrat-bold text-xl mb-2 ${
             currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
@@ -209,24 +196,8 @@ const { id } = useLocalSearchParams<{ id: any }>();
               Vous suivez en tant que spectateur
             </Text>
           </View>
-
-          {/* Chat Placeholder */}
-          <View className={`flex-1 rounded-xl p-4 ${
-            currentTheme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'
-          }`}>
             
-
-            <View className="flex-1 justify-center items-center">
-
-              <Text className={`font-montserrat text-center mt-4 ${
-                currentTheme === 'dark' ? 'text-gray-400' : 'text-gray-500'
-              }`}>
-                Profitez de vos moments des lives en direct
-              </Text>
-            </View>
-          </View>
         </View>
-      )}
     </SafeAreaView>
   );
 }

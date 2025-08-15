@@ -78,8 +78,8 @@ export default function PaymentScreen() {
   }
 
   const isLiveEvent = (event: EventType): boolean => {
-    const isStarted = event?.is_started === 1;
-    const isLive = event?.is_live === 1;
+    const isStarted = event?.is_started === true;
+    const isLive = event?.is_live === true;
 
     return isStarted || isLive;
   };
@@ -97,7 +97,7 @@ export default function PaymentScreen() {
 
     const isBeforeToday = eventOnlyDate < todayOnlyDate;
     const isTodayButPast = eventOnlyDate.getTime() === todayOnlyDate.getTime() && eventTime < nowTime;
-    const isFinished = event?.is_finished === 1;
+    const isFinished = event?.is_finished === true;
 
     return isBeforeToday || isTodayButPast || isFinished;
   };
@@ -128,11 +128,11 @@ export default function PaymentScreen() {
   const redirectToEvent = () => {
     if (isLiveEvent(event) || isOldEvent(event)) {
       console.log('redirecting to live event');
-      router.push(`/event/${event.id}`);
+      router.replace(`/event/${event.id}`);
     }
     else {
       console.log('redirecting to event details');
-      router.push(`/event/${event.id}`);
+      router.replace(`/event/`);
     }
 
   }
@@ -481,4 +481,5 @@ export default function PaymentScreen() {
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
+
 }

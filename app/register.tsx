@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Mail, Lock, Eye, EyeOff, Play, User, ArrowLeft } from 'lucide-react-native';
+import { Mail, Lock, Eye, EyeOff, User, ArrowLeft, Smartphone } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 
 export default function RegisterScreen() {
-  const { currentTheme, register, isLoggedIn } = useApp();
+  const { currentTheme, register, isLoggedIn, registerOtp, setUserIdTempo } = useApp();
   const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -15,6 +15,9 @@ export default function RegisterScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [signinMethod, setSigninMethod] = useState<'email' | 'mobile'>('email');
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [otp, setOtp] = useState('');
 
   // Redirect if already logged in
   React.useEffect(() => {
@@ -24,7 +27,7 @@ export default function RegisterScreen() {
   }, [isLoggedIn]);
 
   const handleRegister = async () => {
-    if (!name.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
+    if (signinMethod === 'email' && (!name.trim() || !email.trim() || !password.trim() || !confirmPassword.trim())) {
       return;
     }
 
@@ -33,7 +36,31 @@ export default function RegisterScreen() {
     }
 
     setIsLoading(true);
-    const success = await register(name, email, password);
+    const { success, redirect } = await register(name, email, password, signinMethod);
+    // const success = await registerOtp(name, email, password, signinMethod);
+    setIsLoading(false);
+
+    if (signinMethod === 'mobile') {
+      
+      if (!success && redirect) {
+        setIsOtpSent(true);
+      } else {
+        router.replace('/(tabs)');
+      }
+
+    } else if (signinMethod === 'email' && success && !redirect) {
+      router.replace('/(tabs)');
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otp.trim()) {
+      return;
+    }
+
+    setIsLoading(true);
+    const success = await registerOtp(otp);
+    setUserIdTempo(null);
     setIsLoading(false);
 
     if (success) {
@@ -41,8 +68,12 @@ export default function RegisterScreen() {
     }
   };
 
-  const isFormValid = name.trim() && email.trim() && password.trim() && 
-                     confirmPassword.trim() && password === confirmPassword;
+  const isPhoneValid = email.trim().length >= 12 && email.trim().length <= 13;
+
+  const isFormValid = signinMethod === 'email' ? (name.trim() && email.trim() && password.trim() && 
+                     confirmPassword.trim() && password === confirmPassword) : (isPhoneValid && name.trim());
+
+  const isOtpValid = otp.trim().length === 6;
 
   return (
     <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
@@ -64,7 +95,7 @@ export default function RegisterScreen() {
             </Text>
           </View>
 
-          <View className="flex-1 justify-center px-6 py-8">
+          {!isOtpSent && (<View className="flex-1 justify-center px-6 py-8">
             {/* Logo/Brand */}
             <View className="items-center mb-8">
               
@@ -89,6 +120,39 @@ export default function RegisterScreen() {
               }`}>
                 Créer un compte
               </Text>
+
+              <View className={`${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'} gap-2 rounded-lg p-2 flex-row items-center justify-center mb-6`} >
+                <Pressable
+                  onPress={() => setSigninMethod('email')}
+                  className={`flex-1 py-2 px-4 rounded-lg flex-row gap-2 items-center justify-center ${
+                    signinMethod === 'email' ? 'bg-primary-500' : (currentTheme === 'dark' ? 'bg-gray-800' : 'bg-white')
+                  }`}
+                >
+                  <Mail size={20} color={currentTheme === 'dark' ? '#374151' : '#6B7280'} />
+                  <Text
+                    className={`font-montserrat-semibold text-lg ${
+                      signinMethod === 'email' ? 'text-white' : 'text-gray-600'
+                    }`}
+                  >
+                    Email
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => setSigninMethod('mobile')}
+                  className={`flex-1 py-2 px-4 rounded-lg flex-row gap-2 items-center justify-center ${
+                    signinMethod === 'mobile' ? 'bg-primary-500' : 'bg-gray-800'
+                  }`}
+                >
+                  <Smartphone size={20} color={currentTheme === 'dark' ? '#374151' : '#6B7280'} />
+                  <Text
+                    className={`font-montserrat-semibold text-lg ${
+                      signinMethod === 'mobile' ? 'text-white' : 'text-gray-600'
+                    }`}
+                  >
+                    Phone
+                  </Text>
+                </Pressable>
+              </View>
 
               {/* Name Input */}
               <View className="mb-4">
@@ -122,20 +186,24 @@ export default function RegisterScreen() {
                 <Text className={`font-montserrat-medium mb-2 ${
                   currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-700'
                 }`}>
-                  Email
+                  {signinMethod === 'email' ? 'Email' : 'Numéro de téléphone'}
                 </Text>
                 <View className={`flex-row items-center px-4 py-3 rounded-xl border ${
                   currentTheme === 'dark' 
                     ? 'bg-gray-700 border-gray-600' 
                     : 'bg-gray-50 border-gray-200'
                 }`}>
-                  <Mail size={20} color={currentTheme === 'dark' ? '#9CA3AF' : '#6B7280'} />
+                  {signinMethod === 'email' ? (
+                    <Mail size={20} color={currentTheme === 'dark' ? '#9CA3AF' : '#6B7280'} />
+                  ) : (
+                    <Smartphone size={20} color={currentTheme === 'dark' ? '#9CA3AF' : '#6B7280'} />
+                  )}
                   <TextInput
-                    placeholder="votre@email.com"
+                    placeholder={signinMethod === 'email' ? 'votre@email.com' : '243 xxx xxx xxx'}
                     placeholderTextColor={currentTheme === 'dark' ? '#6B7280' : '#9CA3AF'}
                     value={email}
                     onChangeText={setEmail}
-                    keyboardType="email-address"
+                    keyboardType={signinMethod === 'email' ? 'email-address' : 'phone-pad'}
                     autoCapitalize="none"
                     autoCorrect={false}
                     className={`flex-1 ml-3 font-montserrat ${
@@ -146,7 +214,7 @@ export default function RegisterScreen() {
               </View>
 
               {/* Password Input */}
-              <View className="mb-4">
+              {signinMethod === 'email' && (<View className="mb-4">
                 <Text className={`font-montserrat-medium mb-2 ${
                   currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-700'
                 }`}>
@@ -181,10 +249,9 @@ export default function RegisterScreen() {
                     )}
                   </TouchableOpacity>
                 </View>
-              </View>
+              </View>)}
 
-              {/* Confirm Password Input */}
-              <View className="mb-6">
+              {signinMethod === 'email' && (<View className="mb-4">
                 <Text className={`font-montserrat-medium mb-2 ${
                   currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-700'
                 }`}>
@@ -228,7 +295,7 @@ export default function RegisterScreen() {
                     Les mots de passe ne correspondent pas
                   </Text>
                 )}
-              </View>
+              </View>)}
 
               {/* Register Button */}
               <TouchableOpacity
@@ -259,7 +326,64 @@ export default function RegisterScreen() {
                 </Text>
               </TouchableOpacity>
             </View>
+          </View>)}
+
+          {isOtpSent && (<View className="flex-1 justify-center px-6 py-8">
+            {/* Registration Form */}
+            <View className={`rounded-2xl p-6 mb-6 ${
+              currentTheme === 'dark' ? 'bg-gray-800' : 'bg-white'
+            } shadow-lg`}>
+              <Text className={`font-montserrat-bold text-xl mb-6 text-center ${
+                currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>
+                Vérification OTP
+              </Text>
+
+              {/* OTP Input */}
+              <View className="mb-4">
+                <Text className={`font-montserrat-medium mb-2 ${
+                  currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                }`}>
+                  Entrez le code OTP envoyé par SMS
+                </Text>
+                <View className={`flex-row items-center px-4 py-3 rounded-xl border ${
+                  currentTheme === 'dark' 
+                    ? 'bg-gray-700 border-gray-600' 
+                    : 'bg-gray-50 border-gray-200'
+                }`}>
+                  
+                  <TextInput
+                    placeholder="Ex: 123456"
+                    placeholderTextColor={currentTheme === 'dark' ? '#6B7280' : '#9CA3AF'}
+                    value={otp}
+                    onChangeText={setOtp}
+                    keyboardType="phone-pad"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    className={`flex-1 ml-3 font-montserrat ${
+                      currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
+                    }`}
+                  />
+                </View>
+              </View>
+
+              {/* Register Button */}
+              <TouchableOpacity
+                onPress={handleVerifyOtp}
+                disabled={isLoading || !isOtpValid}
+                className={`py-4 px-6 rounded-xl ${
+                  isLoading || !isOtpValid
+                    ? 'bg-gray-400'
+                    : 'bg-primary-500'
+                }`}
+              >
+                <Text className="font-montserrat-bold text-white text-center text-lg">
+                  {isLoading ? 'Vérification...' : 'Vérifier'}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

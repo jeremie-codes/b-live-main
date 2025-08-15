@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Image, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Image, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Mail, Lock, Eye, EyeOff, Play } from 'lucide-react-native';
+import { Mail, Lock, Eye, EyeOff, Smartphone, Phone } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 
 export default function LoginScreen() {
@@ -12,6 +12,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [loginMethod, setLoginMethod] = useState<'email' | 'mobile'>('email');
 
   // Redirect if already logged in
   React.useEffect(() => {
@@ -21,12 +22,16 @@ export default function LoginScreen() {
   }, [isLoggedIn]);
 
   const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
+    if (loginMethod === 'email' && (!email.trim() || !password.trim())) {
+      return;
+    }
+
+    if (loginMethod === 'mobile' && !email.trim()) {
       return;
     }
 
     setIsLoading(true);
-    const success = await login(email, password);
+    const success = await login(email, password, loginMethod);
     setIsLoading(false);
 
     if (success) {
@@ -64,95 +69,165 @@ export default function LoginScreen() {
             </Text>
           </View>
 
-          {/* Login Form */}
+
           <View className={`rounded-2xl p-6 mb-6 ${
             currentTheme === 'dark' ? 'bg-gray-800' : 'bg-white'
           } shadow-lg`}>
-            <Text className={`font-montserrat-bold text-xl mb-6 text-center ${
-              currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
-            }`}>
-              Connexion
-            </Text>
-
-            {/* Email Input */}
-            <View className="mb-4">
-              <Text className={`font-montserrat-medium mb-2 ${
-                currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-              }`}>
-                Email
-              </Text>
-              <View className={`flex-row items-center px-4 py-3 rounded-xl border ${
-                currentTheme === 'dark' 
-                  ? 'bg-gray-700 border-gray-600' 
-                  : 'bg-gray-50 border-gray-200'
-              }`}>
-                <Mail size={20} color={currentTheme === 'dark' ? '#9CA3AF' : '#6B7280'} />
-                <TextInput
-                  placeholder="votre@email.com"
-                  placeholderTextColor={currentTheme === 'dark' ? '#6B7280' : '#9CA3AF'}
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  className={`flex-1 ml-3 font-montserrat ${
-                    currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
+            {/* Login Form */}
+            <View className={`${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'} gap-2 rounded-lg p-2 flex-row items-center justify-center mb-6`} >
+              <Pressable
+                onPress={() => setLoginMethod('email')}
+                className={`flex-1 py-2 px-4 rounded-lg flex-row gap-2 items-center justify-center ${
+                  loginMethod === 'email' ? 'bg-primary-500' : (currentTheme === 'dark' ? 'bg-gray-800' : 'bg-white')
+                }`}
+              >
+                <Mail size={20} color={currentTheme === 'dark' ? '#374151' : '#6B7280'} />
+                <Text
+                  className={`font-montserrat-semibold text-lg ${
+                    loginMethod === 'email' ? 'text-white' : 'text-gray-600'
                   }`}
-                />
-              </View>
-            </View>
-
-            {/* Password Input */}
-            <View className="mb-6">
-              <Text className={`font-montserrat-medium mb-2 ${
-                currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-              }`}>
-                Mot de passe
-              </Text>
-              <View className={`flex-row items-center px-4 py-3 rounded-xl border ${
-                currentTheme === 'dark' 
-                  ? 'bg-gray-700 border-gray-600' 
-                  : 'bg-gray-50 border-gray-200'
-              }`}>
-                <Lock size={20} color={currentTheme === 'dark' ? '#9CA3AF' : '#6B7280'} />
-                <TextInput
-                  placeholder="Votre mot de passe"
-                  placeholderTextColor={currentTheme === 'dark' ? '#6B7280' : '#9CA3AF'}
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry={!showPassword}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  className={`flex-1 ml-3 font-montserrat ${
-                    currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
-                  }`}
-                />
-                <TouchableOpacity
-                  onPress={() => setShowPassword(!showPassword)}
-                  className="ml-2"
                 >
-                  {showPassword ? (
-                    <EyeOff size={20} color={currentTheme === 'dark' ? '#9CA3AF' : '#6B7280'} />
-                  ) : (
-                    <Eye size={20} color={currentTheme === 'dark' ? '#9CA3AF' : '#6B7280'} />
-                  )}
-                </TouchableOpacity>
-              </View>
+                  Email
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={() => setLoginMethod('mobile')}
+                className={`flex-1 py-2 px-4 rounded-lg flex-row gap-2 items-center justify-center ${
+                  loginMethod === 'mobile' ? 'bg-primary-500' : 'bg-gray-800'
+                }`}
+              >
+                <Smartphone size={20} color={currentTheme === 'dark' ? '#374151' : '#6B7280'} />
+                <Text
+                  className={`font-montserrat-semibold text-lg ${
+                    loginMethod === 'mobile' ? 'text-white' : 'text-gray-600'
+                  }`}
+                >
+                  Phone
+                </Text>
+              </Pressable>
             </View>
+
+            {loginMethod === 'email' && (
+              /* Email Input */
+              <View>
+
+                <Text className={`font-montserrat-bold text-xl mb-6 text-center ${
+                  currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
+                }`}>
+                  Connexion
+                </Text>
+    
+                {/* Email Input */}
+                <View className="mb-4">
+                  <Text className={`font-montserrat-medium mb-2 ${
+                    currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                    Email
+                  </Text>
+                  <View className={`flex-row items-center px-4 py-3 rounded-xl border ${
+                    currentTheme === 'dark' 
+                      ? 'bg-gray-700 border-gray-600' 
+                      : 'bg-gray-50 border-gray-200'
+                  }`}>
+                    <Mail size={20} color={currentTheme === 'dark' ? '#9CA3AF' : '#6B7280'} />
+                    <TextInput
+                      placeholder="votre@email.com"
+                      placeholderTextColor={currentTheme === 'dark' ? '#6B7280' : '#9CA3AF'}
+                      value={email}
+                      onChangeText={setEmail}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      className={`flex-1 ml-3 font-montserrat ${
+                        currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
+                      }`}
+                    />
+                  </View>
+                </View>
+    
+                {/* Password Input */}
+                <View className="mb-6">
+                  <Text className={`font-montserrat-medium mb-2 ${
+                    currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                    Mot de passe
+                  </Text>
+                  <View className={`flex-row items-center px-4 py-3 rounded-xl border ${
+                    currentTheme === 'dark' 
+                      ? 'bg-gray-700 border-gray-600' 
+                      : 'bg-gray-50 border-gray-200'
+                  }`}>
+                    <Lock size={20} color={currentTheme === 'dark' ? '#9CA3AF' : '#6B7280'} />
+                    <TextInput
+                      placeholder="Votre mot de passe"
+                      placeholderTextColor={currentTheme === 'dark' ? '#6B7280' : '#9CA3AF'}
+                      value={password}
+                      onChangeText={setPassword}
+                      secureTextEntry={!showPassword}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      className={`flex-1 ml-3 font-montserrat ${
+                        currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
+                      }`}
+                    />
+                    <TouchableOpacity
+                      onPress={() => setShowPassword(!showPassword)}
+                      className="ml-2"
+                    >
+                      {showPassword ? (
+                        <EyeOff size={20} color={currentTheme === 'dark' ? '#9CA3AF' : '#6B7280'} />
+                      ) : (
+                        <Eye size={20} color={currentTheme === 'dark' ? '#9CA3AF' : '#6B7280'} />
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                </View>
+    
+              </View>
+            )}
+            {loginMethod === 'mobile' && (
+              /* Mobile Input */
+              <View className="mb-4">
+                  <Text className={`font-montserrat-medium mb-2 ${
+                    currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                    Numéro de téléphone
+                  </Text>
+                  <View className={`flex-row items-center px-4 py-3 rounded-xl border ${
+                    currentTheme === 'dark' 
+                      ? 'bg-gray-700 border-gray-600' 
+                      : 'bg-gray-50 border-gray-200'
+                  }`}>
+                    <Phone size={20} color={currentTheme === 'dark' ? '#9CA3AF' : '#6B7280'} />
+                    <TextInput
+                      placeholder="234 xxx xxx xxx"
+                      placeholderTextColor={currentTheme === 'dark' ? '#6B7280' : '#9CA3AF'}
+                      value={email}
+                      onChangeText={setEmail}
+                      keyboardType="phone-pad"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      className={`flex-1 ml-3 font-montserrat ${
+                        currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
+                      }`}
+                    />
+                  </View>
+              </View>
+            )}
 
             {/* Login Button */}
             <TouchableOpacity
               onPress={handleLogin}
-              disabled={isLoading || !email.trim() || !password.trim()}
+              disabled={isLoading || (loginMethod === 'mobile' && !email.trim()) || (loginMethod === 'email' && !password.trim())}
               className={`py-4 px-6 rounded-xl ${
-                isLoading || !email.trim() || !password.trim()
-                  ? 'bg-gray-400'
-                  : 'bg-primary-500'
-              }`}
-            >
-              <Text className="font-montserrat-bold text-white text-center text-lg">
-                {isLoading ? 'Connexion...' : 'Se connecter'}
-              </Text>
+                isLoading || (loginMethod === 'mobile' && !email.trim()) || (loginMethod === 'email' && !password.trim())
+                      ? 'bg-gray-400'
+                      : 'bg-primary-500'
+                  }`}
+                >
+                <Text className="font-montserrat-bold text-white text-center text-lg">
+                  {isLoading ? 'Connexion...' : 'Se connecter'}
+                </Text>
             </TouchableOpacity>
           </View>
 
