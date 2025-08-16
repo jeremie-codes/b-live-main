@@ -1,18 +1,21 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Image, ScrollView, Pressable } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Image, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Mail, Lock, Eye, EyeOff, Smartphone, Phone } from 'lucide-react-native';
+import { Mail, Lock, Eye, EyeOff, Smartphone, Phone, RefreshCw, X } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 
 export default function LoginScreen() {
-  const { currentTheme, login, isLoggedIn } = useApp();
+  const { currentTheme, login, isLoggedIn, loginOtp, resendOtp } = useApp();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loginMethod, setLoginMethod] = useState<'email' | 'mobile'>('email');
+  const [isLoadingResendOtp, setIsLoadingResendOtp] = useState(false);
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [otp, setOtp] = useState('');
 
   // Redirect if already logged in
   React.useEffect(() => {
@@ -31,13 +34,45 @@ export default function LoginScreen() {
     }
 
     setIsLoading(true);
-    const success = await login(email, password, loginMethod);
+    const { success, redirect } = await login(email, password, loginMethod);
+    setIsLoading(false);
+
+    if (loginMethod === 'mobile') {
+      
+      if (redirect) {
+        setIsOtpSent(true);
+      } else {
+        return;
+      }
+
+    } else if (loginMethod === 'email' && success && !redirect) {
+      router.replace('/(tabs)');
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setIsLoadingResendOtp(true);
+    await resendOtp('login');
+    setIsLoadingResendOtp(false);
+  };
+  
+  const handleVerifyOtp = async () => {
+    if (!otp.trim()) {
+      return;
+    }
+
+    setIsLoading(true);
+    const success = await loginOtp(otp);
     setIsLoading(false);
 
     if (success) {
       router.replace('/(tabs)');
     }
   };
+
+  const isOtpValid = otp.trim().length === 6;
+
+  const isPhoneValid = email.trim().length >= 12 && email.trim().length <= 13;
 
   return (
     <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
@@ -46,7 +81,7 @@ export default function LoginScreen() {
         // className="flex-1"
       >
         <ScrollView showsVerticalScrollIndicator={false}>
-          <View className="flex-1 justify-center px-6 pt-8">
+          {!isOtpSent && (<View className="flex-1 justify-center px-6 pt-8">
             {/* Logo/Brand */}
             <View className="items-center mb-12">
               {/* Logo */}
@@ -218,9 +253,9 @@ export default function LoginScreen() {
             {/* Login Button */}
             <TouchableOpacity
               onPress={handleLogin}
-              disabled={isLoading || (loginMethod === 'mobile' && !email.trim()) || (loginMethod === 'email' && !password.trim())}
+              disabled={isLoading || (loginMethod === 'mobile' && !isPhoneValid) || (loginMethod === 'email' && !password.trim())}
               className={`py-4 px-6 rounded-xl ${
-                isLoading || (loginMethod === 'mobile' && !email.trim()) || (loginMethod === 'email' && !password.trim())
+                isLoading || (loginMethod === 'mobile' && !isPhoneValid) || (loginMethod === 'email' && !password.trim())
                       ? 'bg-gray-400'
                       : 'bg-primary-500'
                   }`}
@@ -244,24 +279,90 @@ export default function LoginScreen() {
               </Text>
             </TouchableOpacity>
           </View>
+          </View>)}
 
-          {/* Demo Credentials */}
-          {/* <View className={`rounded-xl p-4 ${
-            currentTheme === 'dark' ? 'bg-blue-900/20 border border-blue-800' : 'bg-blue-50 border border-blue-200'
-          }`}>
-            <Text className={`font-montserrat-bold text-sm mb-2 ${
-              currentTheme === 'dark' ? 'text-blue-300' : 'text-blue-700'
-            }`}>
-              Compte de démonstration
-            </Text>
-            <Text className={`font-montserrat text-xs ${
-              currentTheme === 'dark' ? 'text-blue-400' : 'text-blue-600'
-            }`}>
-              Email : demo@example.com{'\n'}
-              Mot de passe : demo123
-            </Text>
-          </View> */}
-        </View>
+          {isOtpSent && (<View className="flex-1 justify-center px-6 pt-8">
+            {/* Registration Form */}
+            <View className={`rounded-2xl p-6 mb-6 ${
+              currentTheme === 'dark' ? 'bg-gray-800' : 'bg-white'
+            } shadow-lg`}>
+              <Text className={`font-montserrat-bold text-xl mb-6 text-center ${
+                currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>
+                Vérification OTP
+              </Text>
+
+              {/* OTP Input */}
+              <View className="mb-4">
+                <Text className={`font-montserrat-medium mb-2 ${
+                  currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                }`}>
+                  Entrez le code OTP envoyé par SMS {`\n`} au : {email}
+                </Text>
+                <View className={`flex-row items-center px-4 py-3 rounded-xl border ${
+                  currentTheme === 'dark' 
+                    ? 'bg-gray-700 border-gray-600' 
+                    : 'bg-gray-50 border-gray-200'
+                }`}>
+                  
+                  <TextInput
+                    placeholder="Ex: 123456"
+                    placeholderTextColor={currentTheme === 'dark' ? '#6B7280' : '#9CA3AF'}
+                    value={otp}
+                    onChangeText={setOtp}
+                    keyboardType="phone-pad"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    className={`flex-1 ml-3 font-montserrat ${
+                      currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
+                    }`}
+                  />
+                </View>
+
+                <View className='flex-row items-center justify-between'>
+                  <TouchableOpacity
+                    onPress={() => setIsOtpSent(false)}
+                    className={`py-4 flex-row items-center`}
+                  >
+                    <X size={20} color={currentTheme === 'dark' ? '#ef4444' : '#ef4444'} />
+                    <Text className={`font-montserrat-medium text-red-500`}>
+                      Annuler
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={handleResendOtp}
+                    className={`py-4 flex-row items-center`}
+                  >
+                    {!isLoadingResendOtp ? <RefreshCw size={20} color={currentTheme === 'dark' ? '#9CA3AF' : '#6B7280'} /> : <ActivityIndicator size={'small'} color={currentTheme === 'dark' ? '#9CA3AF' : '#6B7280'} />}
+                    <Text className={`font-montserrat-medium ${
+                      currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                      }`}>
+                      {isLoadingResendOtp ? 'Envoi en cours...' : 'Re-envoyer le code'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                
+              </View>
+
+              {/* Register Button */}
+              <TouchableOpacity
+                onPress={handleVerifyOtp}
+                disabled={isLoading || !isOtpValid}
+                className={`py-4 px-6 rounded-xl ${
+                  isLoading || !isOtpValid
+                    ? 'bg-gray-400'
+                    : 'bg-primary-500'
+                }`}
+              >
+                <Text className="font-montserrat-bold text-white text-center text-lg">
+                  {isLoading ? 'Vérification...' : 'Vérifier'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          )}
+
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

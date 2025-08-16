@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Pressable } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Pressable, ActivityIndicator, } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Mail, Lock, Eye, EyeOff, User, ArrowLeft, Smartphone } from 'lucide-react-native';
+import { Mail, Lock, Eye, EyeOff, User, ArrowLeft, Smartphone, RefreshCw, X } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 
 export default function RegisterScreen() {
-  const { currentTheme, register, isLoggedIn, registerOtp, setUserIdTempo } = useApp();
+  const { currentTheme, register, isLoggedIn, registerOtp, resendOtp } = useApp();
   const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -15,8 +15,9 @@ export default function RegisterScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingResendOtp, setIsLoadingResendOtp] = useState(false);
   const [signinMethod, setSigninMethod] = useState<'email' | 'mobile'>('email');
-  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [isOtpSent, setIsOtpSent] = useState(falsecls);
   const [otp, setOtp] = useState('');
 
   // Redirect if already logged in
@@ -37,20 +38,25 @@ export default function RegisterScreen() {
 
     setIsLoading(true);
     const { success, redirect } = await register(name, email, password, signinMethod);
-    // const success = await registerOtp(name, email, password, signinMethod);
     setIsLoading(false);
 
     if (signinMethod === 'mobile') {
       
-      if (!success && redirect) {
+      if (redirect) {
         setIsOtpSent(true);
       } else {
-        router.replace('/(tabs)');
+        return;
       }
 
     } else if (signinMethod === 'email' && success && !redirect) {
       router.replace('/(tabs)');
     }
+  };
+
+  const handleResendOtp = async () => {
+    setIsLoadingResendOtp(true);
+    await resendOtp('register');
+    setIsLoadingResendOtp(false);
   };
 
   const handleVerifyOtp = async () => {
@@ -60,7 +66,7 @@ export default function RegisterScreen() {
 
     setIsLoading(true);
     const success = await registerOtp(otp);
-    setUserIdTempo(null);
+    // setUserIdTempo(null);
     setIsLoading(false);
 
     if (success) {
@@ -344,7 +350,7 @@ export default function RegisterScreen() {
                 <Text className={`font-montserrat-medium mb-2 ${
                   currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-700'
                 }`}>
-                  Entrez le code OTP envoyé par SMS
+                  Entrez le code OTP envoyé par SMS {`\n`} au : {email}
                 </Text>
                 <View className={`flex-row items-center px-4 py-3 rounded-xl border ${
                   currentTheme === 'dark' 
@@ -365,6 +371,31 @@ export default function RegisterScreen() {
                     }`}
                   />
                 </View>
+
+                <View className='flex-row items-center justify-between'>
+                  <TouchableOpacity
+                    onPress={() => setIsOtpSent(false)}
+                    className={`py-4 flex-row items-center`}
+                  >
+                    <X size={20} color={currentTheme === 'dark' ? '#ef4444' : '#ef4444'} />
+                    <Text className={`font-montserrat-medium text-red-500`}>
+                      Annuler
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={handleResendOtp}
+                    className={`py-4 flex-row items-center`}
+                  >
+                    {!isLoadingResendOtp ? <RefreshCw size={20} color={currentTheme === 'dark' ? '#9CA3AF' : '#6B7280'} /> : <ActivityIndicator size={'small'} color={currentTheme === 'dark' ? '#9CA3AF' : '#6B7280'} />}
+                    <Text className={`font-montserrat-medium ${
+                      currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                      }`}>
+                      {isLoadingResendOtp ? 'Envoi en cours...' : 'Re-envoyer le code'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                
               </View>
 
               {/* Register Button */}

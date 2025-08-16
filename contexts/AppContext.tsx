@@ -31,7 +31,8 @@ interface AppContextType {
   hideNotification: () => void;
   setUser: (user: User | null) => void;
   setTheme: (theme: 'light' | 'dark' | 'system') => void;
-  login: (email: string, password: string, loginMethod: 'email' | 'mobile') => Promise<boolean>;
+  login: (email: string, password: string, loginMethod: 'email' | 'mobile') => Promise<{ success: boolean, redirect: boolean|null }>;
+  loginOtp: (otp: string) => Promise<boolean>;
   register: (name: string, email: string, password: string, loginMethod: 'email' | 'mobile') => Promise<{ success: boolean, redirect: boolean|null }>;
   logout: () => Promise<boolean>;
   addToFavorite: (eventId: number) => void;
@@ -42,6 +43,7 @@ interface AppContextType {
   favoriteRefreshKey: number;
   registerOtp: (otp: string) => Promise<boolean>;
   userIdTempo: number | null;
+  resendOtp: (type: 'register' | 'login') => Promise<boolean>;
   setUserIdTempo: (userIdTempo: number | null) => void;
   // makeAuthenticatedRequest: (url: string, options?: any) => Promise<any>;
 } 
@@ -61,6 +63,7 @@ export function AppProvider({ children }: AppProviderProps) {
   const [notification, setNotification] = useState<Notification | null>(null);
   const [favoriteRefreshKey, setFavoriteRefreshKey] = useState(Date.now());
   const [userIdTempo, setUserIdTempo] = useState<number | null>(null);
+  const [phoneTempo, setPhoneTempo] = useState<string | null>(null);
 
   const currentTheme = theme === 'system' ? (systemColorScheme || 'light') : theme;
 
@@ -87,43 +90,57 @@ export function AppProvider({ children }: AppProviderProps) {
     }, 300);
   };
 
-  const login = async (email: string, password: string, loginMethod: 'email' | 'mobile'): Promise<boolean> => {
-    try {
-      // console.log('response ', email)
-      let response;
-      if (loginMethod === 'mobile') {
-        response = await axios.post(`${API_URL}/otp/generate-login`, {
+  const login = async (email: string, password: string, loginMethod: 'email' | 'mobile'): Promise<{ success: boolean, redirect: boolean|null }> => {
+    if (loginMethod === 'mobile') {
+      try {
+        // console.log('response ', email)
+        const response = await axios.post(`${API_URL}/otp/generate-login`, {
           phone_number: email,
         });
-      } else {
-        response = await axios.post(`${API_URL}/auth/login`, {
-          email,
-          password,
-        });
-      }
 
-      const { token: authToken, user: userData } = response.data.data;
-      
-      // Store token and user data
-      await AsyncStorage.setItem('authToken', authToken);
-      await AsyncStorage.setItem('userData', JSON.stringify(userData));
-      
-      // console.log(userData)
-      // Update state
-      setToken(authToken);
-      setUser(userData);
-      setIsLoggedIn(true);
-      
-      // Configure axios default headers
-      axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
-      
-      showNotification('Connexion réussie !', 'success');
-      return true;
-    } catch (error: any) {
-      console.error('Login error:', error);
-      showNotification('Email ou mot de passe incorrect', 'error');
-      return false;
+        const { user_id, phone_number } = response.data.data;
+        setUserIdTempo(user_id);
+        setPhoneTempo(phone_number);
+
+        showNotification('Veuillez entrer le code de confirmation', 'info');
+        return { success: true, redirect: true };
+      } catch (error: any) {
+        console.error('Login error:', error);
+        showNotification(error.response.data.message, 'error');
+        return { success: false, redirect: null };
+      }
     }
+      else {
+        try {
+          // console.log('response ', email)
+          const response = await axios.post(`${API_URL}/auth/login`, {
+              email,
+              password,
+            });
+
+          const { token: authToken, user: userData } = response.data.data;
+          
+          // Store token and user data
+          await AsyncStorage.setItem('authToken', authToken);
+          await AsyncStorage.setItem('userData', JSON.stringify(userData));
+          
+          // console.log(userData)
+          // Update state
+          setToken(authToken);
+          setUser(userData);
+          setIsLoggedIn(true);
+          
+          // Configure axios default headers
+          axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
+          
+          showNotification('Connexion réussie !', 'success');
+          return { success: true, redirect: null };
+        } catch (error: any) {
+          console.error('Login error:', error);
+          showNotification(error.response.data.message, 'error');
+          return { success: false, redirect: null };
+        }
+      }
   };
 
   const register = async (name: string, email: string, password: string, loginMethod: 'email' | 'mobile'): Promise<{ success: boolean, redirect: boolean|null }> => {
@@ -140,22 +157,22 @@ export function AppProvider({ children }: AppProviderProps) {
 
         console.log(response);
 
-        const { temp_user_id } = response.data;
+        const { temp_user_id } = response.data.data;
         setUserIdTempo(temp_user_id);
 
-        return { success: true, redirect: false };
+        return { success: true, redirect: true };
       } catch (error: any) {
         
         // Handle 422 status code specifically
         if (error.response?.status === 422) {
-          const responseData = error.response.data;
+          const responseData = error.response.data.data;
           
-          const { temp_user_id } = responseData;
-          setUserIdTempo(temp_user_id);
+          const { user_id } = responseData;
+          setUserIdTempo(user_id);
           
           // Check if phone number is already taken
-          const resendOtp = await axios.post(`${API_URL}/otp/resend-login`, {
-            temp_user_id: temp_user_id
+          const resendOtp = await axios.post(`${API_URL}/otp/resend-register`, {
+            temp_user_id: user_id
           });
 
           console.log(resendOtp);
@@ -207,6 +224,40 @@ export function AppProvider({ children }: AppProviderProps) {
       
   };
 
+  const loginOtp = async (otp: string): Promise<boolean> => {
+    try {
+      let response;
+      response = await axios.post(`${API_URL}/otp/login`, {
+        user_id: userIdTempo,
+        otp: otp
+      });
+      
+      console.log(response.data)
+      
+      const { token: authToken, user: userData } = response.data.data;
+
+      // Store token and user data
+      await AsyncStorage.setItem('authToken', authToken);
+      await AsyncStorage.setItem('userData', JSON.stringify(userData));
+      
+      // Update state
+      setToken(authToken);
+      setUser(userData);
+      setIsLoggedIn(true);
+      
+      // Configure axios default headers
+      axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
+      
+      showNotification('Connexion réussie ! Bienvenue !', 'success');
+      return true;
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      const errorMessage = error.response?.data?.message || 'Erreur lors de la connexion';
+      showNotification(errorMessage, 'error');
+      return false;
+    }
+  };
+
   const registerOtp = async (otp: string): Promise<boolean> => {
     try {
       let response;
@@ -240,6 +291,29 @@ export function AppProvider({ children }: AppProviderProps) {
       return false;
     }
   };
+
+  const resendOtp = async (type: 'register' | 'login') => {
+    try {
+      if (type === 'register') {
+        const resendOtp = await axios.post(`${API_URL}/otp/resend-register`, {
+          temp_user_id: userIdTempo
+        });
+      }
+      else {
+        const resendOtp = await axios.post(`${API_URL}/otp/resend-login`, {
+          user_id: userIdTempo,
+          phone_number: phoneTempo
+        });
+      }
+
+      showNotification('Code OTP envoyé avec succès', 'success');
+      return true;
+    } catch (error: any) {
+      console.log('error resend otp', error);
+      showNotification(error.response.data.message, 'error');
+      return false;
+    }
+  }
 
   const logout = async () => {
     try {
@@ -368,6 +442,8 @@ export function AppProvider({ children }: AppProviderProps) {
       registerOtp,
       userIdTempo,
       setUserIdTempo,
+      loginOtp,
+      resendOtp
       // makeAuthenticatedRequest
     }}>
       {children}
