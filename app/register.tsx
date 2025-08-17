@@ -17,7 +17,7 @@ export default function RegisterScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingResendOtp, setIsLoadingResendOtp] = useState(false);
   const [signinMethod, setSigninMethod] = useState<'email' | 'mobile'>('email');
-  const [isOtpSent, setIsOtpSent] = useState(falsecls);
+  const [isOtpSent, setIsOtpSent] = useState(false);
   const [otp, setOtp] = useState('');
 
   // Redirect if already logged in
