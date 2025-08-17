@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, User, Lock, Eye, EyeOff, Save, Trash2 } from 'lucide-react-native';
+import { ArrowLeft, User, Lock, Eye, EyeOff, Save, Trash2, Mail } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 
 export default function EditProfileScreen() {
   const { currentTheme, user, updateProfile, deleteAccount, showNotification } = useApp();
   const router = useRouter();
   const [name, setName] = useState(user?.name || '');
+  const [email, setEmail] = useState(user?.email || '');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -33,7 +34,7 @@ export default function EditProfileScreen() {
     }
 
     setIsLoading(true);
-    const success = await updateProfile(name.trim(), password || undefined);
+    const success = await updateProfile(name.trim(), email.trim(), password || undefined);
     setIsLoading(false);
 
     if (success) {
@@ -131,18 +132,25 @@ export default function EditProfileScreen() {
                 <Text className={`font-montserrat-medium mb-2 ${
                   currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-700'
                 }`}>
-                  Email (non modifiable)
+                  Email
                 </Text>
-                <View className={`px-4 py-3 rounded-xl border ${
+                <View className={`flex-row items-center px-4 py-3 rounded-xl border ${
                   currentTheme === 'dark' 
-                    ? 'bg-gray-600 border-gray-500' 
-                    : 'bg-gray-100 border-gray-300'
+                    ? 'bg-gray-700 border-gray-600' 
+                    : 'bg-gray-50 border-gray-200'
                 }`}>
-                  <Text className={`font-montserrat ${
-                    currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-600'
-                  }`}>
-                    {user?.email}
-                  </Text>
+                  <Mail size={20} color={currentTheme === 'dark' ? '#9CA3AF' : '#6B7280'} />
+                  <TextInput
+                    placeholder="Votre email"
+                    placeholderTextColor={currentTheme === 'dark' ? '#6B7280' : '#9CA3AF'}
+                    value={email}
+                    onChangeText={setEmail}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    className={`flex-1 ml-3 font-montserrat ${
+                      currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
+                    }`}
+                  />
                 </View>
               </View>
 
