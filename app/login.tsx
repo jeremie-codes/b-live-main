@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Image, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Mail, Lock, Eye, EyeOff, Smartphone, Phone, RefreshCw, X } from 'lucide-react-native';
+import { Mail, Lock, Eye, EyeOff, Smartphone, Phone, RefreshCw, X, ArrowLeft } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 
 export default function LoginScreen() {
@@ -81,6 +81,15 @@ export default function LoginScreen() {
         // className="flex-1"
       >
         <ScrollView showsVerticalScrollIndicator={false}>
+
+          <View className={`flex-row items-center px-4 py-3 ${
+              currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'
+            }`}>
+            <TouchableOpacity onPress={() => router.back()} className="mr-3">
+              <ArrowLeft size={24} color={currentTheme === 'dark' ? '#FFFFFF' : '#000000'} />
+            </TouchableOpacity>
+          </View>
+
           {!isOtpSent && (<View className="flex-1 justify-center px-6 pt-8">
             {/* Logo/Brand */}
             <View className="items-center mb-12">

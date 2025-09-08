@@ -16,7 +16,7 @@ export default function ProfileScreen() {
     {
       icon: UserCog,
       title: 'Modifier le profil',
-      subtitle: user?.email,
+      subtitle: user?.email || 'Connexion requise',
       onPress: () => router.push('/edit-profile')
     },
     {
@@ -46,12 +46,27 @@ export default function ProfileScreen() {
             }`}>
               <User size={32} color={currentTheme === 'dark' ? '#E5E7EB' : '#374151'} />
             </View>
-            <Text className={`font-montserrat-bold text-xl mb-1 ${
+            {user && <Text className={`font-montserrat-bold text-xl mb-1 ${
               currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
             }`}>
               {user?.name}
-            </Text>
-            <Text className={`font-montserrat ${
+            </Text>}
+            {!user && <View className='flex-col items-center'>
+              <Text className={`font-montserrat-medium text-lg mb-1 ${
+                currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>
+                Vous n'êtes pas connecté
+              </Text>
+
+              <TouchableOpacity onPress={() => router.push('/login')} className='bg-primary-500 py-2 px-4 rounded-xl mt-4'>
+                <Text className={`font-montserrat-bold text-xl mb-1 ${
+                  currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
+                }`}>
+                  Se connecter
+                </Text>
+              </TouchableOpacity>
+              </View>}
+            {user && <Text className={`font-montserrat ${
               currentTheme === 'dark' ? 'text-gray-400' : 'text-gray-600'
             }`}>
               Membre depuis le {new Date(user?.created_at || '').toLocaleDateString('fr-FR', {
@@ -59,7 +74,7 @@ export default function ProfileScreen() {
                 month: 'long',
                 day: 'numeric'
               })}
-            </Text>
+            </Text>}
           </View>
         </View>
 
@@ -183,7 +198,7 @@ export default function ProfileScreen() {
         </View>
 
         {/* Logout Button */}
-        <TouchableOpacity
+        {user && <TouchableOpacity
           disabled={isLoading}
           onPress={async () => {
              setIsLoading(true);
@@ -202,7 +217,7 @@ export default function ProfileScreen() {
           <Text className="font-montserrat-semibold text-red-500 text-center">
             Se déconnecter {isLoading && <ActivityIndicator size="small" color="#FF0000" />}
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity>}
       </ScrollView>
     </SafeAreaView>
   );

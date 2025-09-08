@@ -112,6 +112,11 @@ export default function EventDetailScreen() {
   };
 
   const handleAccess = () => {
+    if (!user) {
+      showNotification('Veuillez vous connecter pour acheter cet événement', 'error');
+      return;
+    }
+
     if (isPurchased) {
       if (isLiveEvent(event) || isOldEvent(event)) {
         router.push(`/live/${event.id}`);

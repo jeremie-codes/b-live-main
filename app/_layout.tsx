@@ -46,13 +46,16 @@ function RootLayoutNav() {
         options={{ 
           headerShown: false,
           gestureEnabled: true 
-        }} 
+        }}
+        redirect={!isLoggedIn}
       />
       <Stack.Screen 
         name="(tabs)" 
-        redirect={!isLoggedIn}
+        // redirect={!isLoggedIn}
       />
-      <Stack.Screen name="event/[id]" redirect={!isLoggedIn} />
+      <Stack.Screen name="event/[id]" 
+        // redirect={!isLoggedIn} 
+      />
       <Stack.Screen name="payment/[id]" redirect={!isLoggedIn} />
       <Stack.Screen name="live/[id]" redirect={!isLoggedIn} />
       <Stack.Screen name="+not-found" />

@@ -18,10 +18,13 @@ export default function SearchScreen() {
   const [dateFilter, setDateFilter] = useState('Tous');
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [lastPage, setLastPage] = useState(1);
+  const [page, setPage] = useState(1);
 
   const isLiveEvent = (event: EventType): boolean => {
-    const isStarted = event?.is_started === 1;
-    const isLive = event?.is_live === 1;
+    const isStarted = event?.is_started === true;
+    const isLive = event?.is_live === true;
 
     return isStarted || isLive;
   };
@@ -50,7 +53,7 @@ export default function SearchScreen() {
 
     const isBeforeToday = eventOnlyDate < todayOnlyDate;
     const isTodayButPast = eventOnlyDate.getTime() === todayOnlyDate.getTime() && eventTime < nowTime;
-    const isFinished = event?.is_finished === 1;
+    const isFinished = event?.is_finished === true;
 
     return isBeforeToday || isTodayButPast || isFinished;
   };
@@ -69,9 +72,11 @@ export default function SearchScreen() {
   
   const loadEvents = async () => {
     try {
-      const data = await getEvents();
+      const { data, has_more, last_page }: any = await getEvents(page);
 
       setData(Array.isArray(data) ? data : []);
+      setHasMore(has_more);
+      setLastPage(last_page);
 
     } catch (error) {
       showNotification('Chargement des événements échoué !', 'error');
@@ -190,6 +195,31 @@ export default function SearchScreen() {
               </Text>
             </View>
           )}
+
+          {/* Pagination */}
+          <View className="px-4 pb-4">
+            <View className="flex-row items-center justify-between">
+              
+              {page > 1 && <TouchableOpacity onPress={() => setPage(page - 1)} disabled={page === 1} className='border-primary-500 border py-2 px-4 rounded-xl'>
+                <Text className={`font-montserrat-medium ${
+                  currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
+                }`}>Page précédente</Text>
+              </TouchableOpacity>}
+              
+              {page < lastPage && <TouchableOpacity onPress={() => setPage(page + 1)} disabled={page === lastPage} className='bg-primary-500 py-2 px-4 rounded-xl'>
+                <Text className={`font-montserrat-medium ${
+                  currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
+                }`}>Page suivante</Text>
+              </TouchableOpacity>}
+
+            </View>
+
+            <Text className={`font-montserrat-medium mt-1 text-center ${
+              currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
+            }`}>
+              Page {page} sur {lastPage}
+            </Text>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>

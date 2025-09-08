@@ -13,18 +13,22 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.blives.app",
-      "buildNumber": "1",
+      "bundleIdentifier": "com.espoirbalezi.blives",
+      "buildNumber": "3",
       "infoPlist": {
+        "NSCameraUsageDescription": "Cette application a besoin d'accéder à la caméra pour permettre la capture de votre photo de profile.",
+        "NSPhotoLibraryUsageDescription": "Cette application a besoin d'accéder à votre photothèque pour la sélection de photo de profile.",
+        "NSPhotoLibraryAddUsageDescription": "Cette application a besoin d'ajouter des photos à votre photothèque, par exemple lors de la sauvegarde d'une photo de billet.",
+        "NSMicrophoneUsageDescription": "Cette application peut utiliser le microphone lors de la capture de vidéos ou d'enregistrements audio.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
-      "versionCode": 2,
+      "versionCode": 3,
       "package": "com.blives.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icons.png",
-        "backgroundColor": "#13f28c"
+        "backgroundColor": "#222222"
       }
     },
     "web": {
@@ -43,7 +47,7 @@
           "image": "./assets/images/icons.png",
           "dark": {
             "image": "./assets/images/icons.png",
-            "backgroundColor": "#13f28c"
+            "backgroundColor": "#222222"
           },
           "resizeMode": "contain",
           "imageWidth": 200
@@ -62,8 +66,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "a278a74e-efbd-4986-bd91-969c60ed1754"
-      }
+        "projectId": "68b7c230-c0f9-4dbb-882e-1340bee0cee2"
+      },
+      "router": {}
     }
   }
 }

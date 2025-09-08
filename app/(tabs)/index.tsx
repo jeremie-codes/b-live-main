@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, Image, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, Image, RefreshControl, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Zap, TrendingUp, TrendingDown } from 'lucide-react-native';
@@ -16,6 +16,9 @@ export default function HomeScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [data, setData] = useState<EventType[]>([]);
+  const [hasMore, setHasMore] = useState(false);
+  const [lastPage, setLastPage] = useState(1);
+  const [page, setPage] = useState(1);
 
   const isLiveEvent = (event: EventType): boolean => {
     const isStarted = event?.is_started;
@@ -63,9 +66,11 @@ export default function HomeScreen() {
 
   const loadEvents = async () => {
     try {
-      const data = await getEvents();
+      const { data, has_more, last_page }: any = await getEvents(page);
 
       setData(Array.isArray(data) ? data : []);
+      setHasMore(has_more);
+      setLastPage(last_page);
 
     } catch (error) {
       showNotification('Chargement des événements échoué !', 'error');
@@ -76,7 +81,7 @@ export default function HomeScreen() {
   };
 
   useEffect(() => {
-    console.log(user?.id)
+    // console.log(user?.id)
     loadEvents();
   }, []);
 
@@ -207,6 +212,32 @@ export default function HomeScreen() {
             </Text>
           </View>
         )}
+
+        {/* Pagination */}
+        <View className="px-4 pb-4">
+          <View className="flex-row items-center justify-between">
+            
+            {page > 1 && <TouchableOpacity onPress={() => setPage(page - 1)} disabled={page === 1} className='border-primary-500 border py-2 px-4 rounded-xl'>
+              <Text className={`font-montserrat-medium ${
+                currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>Page précédente</Text>
+            </TouchableOpacity>}
+            
+            {page < lastPage && <TouchableOpacity onPress={() => setPage(page + 1)} disabled={page === lastPage} className='bg-primary-500 py-2 px-4 rounded-xl'>
+              <Text className={`font-montserrat-medium ${
+                currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>Page suivante</Text>
+            </TouchableOpacity>}
+
+          </View>
+
+          <Text className={`font-montserrat-medium mt-1 text-center ${
+            currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
+          }`}>
+            Page {page} sur {lastPage}
+          </Text>
+        </View>
+
       </ScrollView>
     </SafeAreaView>
   );

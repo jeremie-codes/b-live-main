@@ -1,18 +1,15 @@
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useApp } from '@/contexts/AppContext';
-import { EventType, CategoryType, WishlistItem } from '@/types';
 import { API_URL } from '@/configs/index';
 
 
 // Events functions
-export const getEvents = async () => {
+export const getEvents = async (page: number | null) => {
 
   try {
-    const response = await axios.get(`${API_URL}/event/recents`);
-    const { recentEvents } = response.data;
-    // console.log(recentEvents)
-    return recentEvents;
+    const response = await axios.get(`${API_URL}/events?page=${page ? page : 1}`);
+    const { data, has_more, last_page } = response.data.data;
+    console.log( has_more, last_page )
+    return { data, has_more, last_page };
   } catch (error: any) {
     console.log(error.response?.data?.message || 'Register failed');
   }
@@ -20,11 +17,7 @@ export const getEvents = async () => {
 
 // Events functions
 export const getEventsPopular = async () => {
-  // await delay(1000); // Simulate API delay
-  // In a real app, this would be a GET request to the API
-  // return mockEvents;
   try {
-
     const response = await axios.get(`${API_URL}/favorites/popular`);
 
     const { data } = response.data;

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Heart, ShoppingCart } from 'lucide-react-native';
+import { Heart, ShoppingCart, User2 } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import TicketItem from '@/components/TicketItem';
 import PlaceHolder from '@/components/PlaceHolde';
@@ -70,7 +70,7 @@ export default function MyEventScreen() {
     return (
       <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <View className="flex-1 justify-center items-center px-4">
-          <Heart size={64} color={currentTheme === 'dark' ? '#4B5563' : '#9CA3AF'} />
+          <User2 size={64} color={currentTheme === 'dark' ? '#4B5563' : '#9CA3AF'} />
           <Text className={`font-montserrat-bold text-xl mb-4 mt-4 ${
             currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
           }`}>
@@ -81,6 +81,14 @@ export default function MyEventScreen() {
           }`}>
             Veuillez vous connecter pour voir vos événements acheté(s)
           </Text>
+
+          <TouchableOpacity onPress={() => router.push('/login')} className='bg-primary-500 py-2 px-4 rounded-xl mt-4'>
+            <Text className={`font-montserrat-bold text-xl mb-1 ${
+              currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
+            }`}>
+              Se connecter
+            </Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );

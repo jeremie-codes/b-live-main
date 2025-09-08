@@ -23,6 +23,7 @@ interface Notification {
 interface AppContextType {
   user: User | null;
   isLoggedIn: boolean;
+  isAnonimous: boolean;
   token: string | null;
   theme: 'light' | 'dark' | 'system';
   currentTheme: 'light' | 'dark';
@@ -422,6 +423,7 @@ export function AppProvider({ children }: AppProviderProps) {
     <AppContext.Provider value={{
       user,
       isLoggedIn,
+      isAnonimous : !user,
       token,
       theme,
       currentTheme,

@@ -49,7 +49,7 @@ export default function WelcomeScreen() {
           </Text>
 
           {/* Features */}
-          <View className="w-full mb-12">
+          <View className="w-full">
             {features.map((feature, index) => (
               <View key={index} className="flex-row items-center mb-6">
                 <View className={`w-12 h-12 rounded-full items-center justify-center mr-4 ${
@@ -81,18 +81,18 @@ export default function WelcomeScreen() {
             className="bg-primary-500 py-4 px-6 rounded-xl"
           >
             <Text className="font-montserrat-bold text-white text-center text-lg">
-              Se Connecter
+              Se connecter
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => router.push('/register')}
+            onPress={() => router.push('/(tabs)')}
             className={`py-4 px-6 rounded-xl border-2 border-primary-500 mt-2 ${
               currentTheme === 'dark' ? 'bg-transparent' : 'bg-transparent'
             }`}
           >
             <Text className="font-montserrat-bold text-primary-500 text-center text-lg">
-              Créer un Compte
+              Découvrir
             </Text>
           </TouchableOpacity>
 
