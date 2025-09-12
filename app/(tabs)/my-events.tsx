@@ -79,7 +79,7 @@ export default function MyEventScreen() {
           <Text className={`font-montserrat text-center ${
             currentTheme === 'dark' ? 'text-gray-400' : 'text-gray-600'
           }`}>
-            Veuillez vous connecter pour voir vos événements acheté(s)
+            Veuillez vous connecter pour voir vos événements reservé(s)
           </Text>
 
           <TouchableOpacity onPress={() => router.push('/login')} className='bg-primary-500 py-2 px-4 rounded-xl mt-4'>
@@ -114,7 +114,7 @@ export default function MyEventScreen() {
           <Text className={`font-montserrat text-base mb-6 ${
             currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-600'
           }`}>
-            {myEvent.length} événement(s) acheté(s)
+            {myEvent.length} événement(s) reservé(s)
           </Text>
         </View>
 
@@ -137,7 +137,7 @@ export default function MyEventScreen() {
             <Text className={`font-montserrat text-center mb-6 ${
               currentTheme === 'dark' ? 'text-gray-400' : 'text-gray-500'
             }`}>
-              Achêter des événements pour les retrouver ici
+              Reserver des événements pour les retrouver ici
             </Text>
             <TouchableOpacity
               onPress={() => router.push('/')}

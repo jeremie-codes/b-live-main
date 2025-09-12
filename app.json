@@ -14,7 +14,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.espoirbalezi.blives",
-      "buildNumber": "3",
+      "buildNumber": "4",
       "infoPlist": {
         "NSCameraUsageDescription": "Cette application a besoin d'accéder à la caméra pour permettre la capture de votre photo de profile.",
         "NSPhotoLibraryUsageDescription": "Cette application a besoin d'accéder à votre photothèque pour la sélection de photo de profile.",

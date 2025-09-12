@@ -92,14 +92,14 @@ const { id } = useLocalSearchParams<{ id: any }>();
           <Text className={`font-montserrat text-center mb-6 ${
             currentTheme === 'dark' ? 'text-gray-400' : 'text-gray-600'
           }`}>
-            Vous devez acheter cet événement pour y accéder
+            Vous devez reserver cet événement pour y accéder
           </Text>
           <TouchableOpacity
             onPress={() => router.replace(`/event/${event.id}`)}
             className="bg-primary-500 px-6 py-3 rounded-xl"
           >
             <Text className="font-montserrat-semibold text-white">
-              Acheter l'Accès
+              Reserver l'Accès
             </Text>
           </TouchableOpacity>
         </View>

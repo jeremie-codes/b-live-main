@@ -113,7 +113,7 @@ export default function EventDetailScreen() {
 
   const handleAccess = () => {
     if (!user) {
-      showNotification('Veuillez vous connecter pour acheter cet événement', 'error');
+      showNotification('Veuillez vous connecter pour reserver cet événement', 'error');
       return;
     }
 
@@ -309,7 +309,7 @@ export default function EventDetailScreen() {
                 <>
                   <DollarSign size={20} color="#FFFFFF" />
                   <Text className="ml-2 font-montserrat-bold text-white text-lg">
-                    Acheter l'Accès - {event.price} {event.currency}
+                    Reserver l'Accès - {event.price} {event.currency}
                   </Text>
                 </>
               )}

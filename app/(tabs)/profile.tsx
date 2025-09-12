@@ -22,7 +22,7 @@ export default function ProfileScreen() {
     {
       icon: Calendar,
       title: 'Mes Événements',
-      subtitle: Array.isArray(user?.purchasedEvents) ? `${user?.purchasedEvents.length} événement(s) acheté(s)` : 'Aucun événement acheté',
+      subtitle: Array.isArray(user?.purchasedEvents) ? `${user?.purchasedEvents.length} événement(s) reservé(s)` : 'Aucun événement reservé',
       onPress: () => router.push('/(tabs)/my-events')
     }
   ];
