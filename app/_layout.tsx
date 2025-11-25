@@ -9,54 +9,58 @@ import {
   Montserrat_600SemiBold,
   Montserrat_700Bold
 } from '@expo-google-fonts/montserrat';
-import { AppProvider } from '@/contexts/AppContext';
+import { AppProvider, useApp } from '@/contexts/AppContext';
 import { SplashScreen } from 'expo-router';
 import NotificationBanner from '@/components/NotificationBanner';
 import '../global.css';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 function RootLayoutNav() {
+const { currentTheme} = useApp();
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen 
-        name="welcome" 
-        options={{ 
-          headerShown: false,
-          gestureEnabled: false 
-        }} 
-      />
-      <Stack.Screen 
-        name="login" 
-        options={{ 
-          headerShown: false,
-          gestureEnabled: true 
-        }} 
-      />
-      <Stack.Screen 
-        name="register" 
-        options={{ 
-          headerShown: false,
-          gestureEnabled: true 
-        }} 
-      />
-      <Stack.Screen 
-        name="edit-profile" 
-        options={{ 
-          headerShown: false,
-          gestureEnabled: true 
-        }}
-      />
-      <Stack.Screen 
-        name="(tabs)" 
-      
-      />
-      <Stack.Screen name="event/[id]" 
+    <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen 
+          name="welcome" 
+          options={{ 
+            headerShown: false,
+            gestureEnabled: false 
+          }} 
+        />
+        <Stack.Screen 
+          name="login" 
+          options={{ 
+            headerShown: false,
+            gestureEnabled: true 
+          }} 
+        />
+        <Stack.Screen 
+          name="register" 
+          options={{ 
+            headerShown: false,
+            gestureEnabled: true 
+          }} 
+        />
+        <Stack.Screen 
+          name="edit-profile" 
+          options={{ 
+            headerShown: false,
+            gestureEnabled: true 
+          }}
+        />
+        <Stack.Screen 
+          name="(tabs)" 
         
-      />
-      <Stack.Screen name="payment/[id]" />
-      <Stack.Screen name="live/[id]" />
-      <Stack.Screen name="+not-found" />
-    </Stack>
+        />
+        <Stack.Screen name="event/[id]" 
+          
+        />
+        <Stack.Screen name="payment/[id]" />
+        <Stack.Screen name="live/[id]" />
+        <Stack.Screen name="+not-found" />
+      </Stack>
+    </SafeAreaView>
   );
 }
 
