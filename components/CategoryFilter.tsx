@@ -40,7 +40,7 @@ export default function CategoryFilter({ selectedCategory, onSelectCategory }: C
             onPress={() => onSelectCategory('Tous')}
             className={`mr-3 px-4 py-2 rounded-full ${
               selectedCategory === 'Tous'
-                ? 'bg-yellow-500'
+                ? 'bg-primary-600'
                 : currentTheme === 'dark'
                 ? 'bg-gray-700'
                 : 'bg-gray-100'

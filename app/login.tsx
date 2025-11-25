@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Image, ScrollView, Pressable, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Mail, Lock, Eye, EyeOff, Smartphone, Phone, RefreshCw, X, ArrowLeft } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
@@ -75,7 +74,7 @@ export default function LoginScreen() {
   const isPhoneValid = email.trim().length >= 12 && email.trim().length <= 13;
 
   return (
-    <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <View className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         // className="flex-1"
@@ -90,14 +89,14 @@ export default function LoginScreen() {
             </TouchableOpacity>
           </View>
 
-          {!isOtpSent && (<View className="flex-1 justify-center px-6 pt-8">
+          {!isOtpSent && (<View className="justify-center flex-1 px-6 pt-8">
             {/* Logo/Brand */}
             <View className="items-center mb-12">
               {/* Logo */}
               <View className={`w-24 h-24 rounded-full items-center justify-center mb-6 overflow-hidden ${
               currentTheme === 'dark' ? 'bg-primary-500/20' : 'bg-primary-500/10'
             }`}>
-              <Image source={require('../assets/images/icon-app.png')} className='w-full h-full object-cover' />
+              <Image source={require('../assets/images/icon-app.png')} className='object-cover w-full h-full' />
             </View>
   
             {/* Title */}
@@ -269,7 +268,7 @@ export default function LoginScreen() {
                       : 'bg-primary-500'
                   }`}
                 >
-                <Text className="font-montserrat-bold text-white text-center text-lg">
+                <Text className="text-lg text-center text-white font-montserrat-bold">
                   {isLoading ? 'Connexion...' : 'Se connecter'}
                 </Text>
             </TouchableOpacity>
@@ -290,7 +289,7 @@ export default function LoginScreen() {
           </View>
           </View>)}
 
-          {isOtpSent && (<View className="flex-1 justify-center px-6 pt-8">
+          {isOtpSent && (<View className="justify-center flex-1 px-6 pt-8">
             {/* Registration Form */}
             <View className={`rounded-2xl p-6 mb-6 ${
               currentTheme === 'dark' ? 'bg-gray-800' : 'bg-white'
@@ -364,7 +363,7 @@ export default function LoginScreen() {
                     : 'bg-primary-500'
                 }`}
               >
-                <Text className="font-montserrat-bold text-white text-center text-lg">
+                <Text className="text-lg text-center text-white font-montserrat-bold">
                   {isLoading ? 'Vérification...' : 'Vérifier'}
                 </Text>
               </TouchableOpacity>
@@ -374,6 +373,6 @@ export default function LoginScreen() {
 
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }

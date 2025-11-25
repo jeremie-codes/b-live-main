@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
@@ -12,11 +12,9 @@ import {
 import { AppProvider } from '@/contexts/AppContext';
 import { SplashScreen } from 'expo-router';
 import NotificationBanner from '@/components/NotificationBanner';
-import { useApp } from '@/contexts/AppContext';
 import '../global.css';
 
 function RootLayoutNav() {
-  const { isLoggedIn } = useApp();
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
@@ -47,17 +45,16 @@ function RootLayoutNav() {
           headerShown: false,
           gestureEnabled: true 
         }}
-        redirect={!isLoggedIn}
       />
       <Stack.Screen 
         name="(tabs)" 
-        // redirect={!isLoggedIn}
+      
       />
       <Stack.Screen name="event/[id]" 
-        // redirect={!isLoggedIn} 
+        
       />
-      <Stack.Screen name="payment/[id]" redirect={!isLoggedIn} />
-      <Stack.Screen name="live/[id]" redirect={!isLoggedIn} />
+      <Stack.Screen name="payment/[id]" />
+      <Stack.Screen name="live/[id]" />
       <Stack.Screen name="+not-found" />
     </Stack>
   );

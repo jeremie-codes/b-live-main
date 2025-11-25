@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, RefreshControl } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowLeft, Calendar, Users, DollarSign, Play, Clock, Heart } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
@@ -38,18 +37,18 @@ export default function EventDetailScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
-        <View className="flex-1 justify-center items-center">
+      <View className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <View className="items-center justify-center flex-1">
             <ActivityIndicator size="large" color="#8b5cf6" />
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (!event) {
     return (
-      <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
-        <View className="flex-1 justify-center items-center">
+      <View className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <View className="items-center justify-center flex-1">
           <Text className={`font-montserrat-bold text-xl ${
             currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
           }`}>
@@ -58,14 +57,14 @@ export default function EventDetailScreen() {
 
           <TouchableOpacity 
             onPress={() => router.back()}
-            className="mt-4 bg-primary-600 px-6 py-3 rounded-xl"
+            className="px-6 py-3 mt-4 bg-primary-600 rounded-xl"
           >
             <Text className="text-white font-['Montserrat-SemiBold']">
               Revenir en arrière
             </Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -157,7 +156,7 @@ export default function EventDetailScreen() {
   };
 
   return (
-    <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-white'}`}>
+    <View className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-white'}`}>
       {/* Header */}
       <View className={`flex-row items-center px-4 py-5 ${
         currentTheme === 'dark' ? 'bg-gray-900' : 'bg-white'
@@ -210,14 +209,14 @@ export default function EventDetailScreen() {
           )}
           
           {isLiveEvent(event) && (
-            <View className="absolute top-4 left-4 bg-red-500 px-3 py-2 rounded-full flex-row items-center">
-              <View className="w-2 h-2 bg-white rounded-full mr-2" />
-              <Text className="text-white font-montserrat-bold text-sm">EN DIRECT</Text>
+            <View className="absolute flex-row items-center px-3 py-2 bg-red-500 rounded-full top-4 left-4">
+              <View className="w-2 h-2 mr-2 bg-white rounded-full" />
+              <Text className="text-sm text-white font-montserrat-bold">EN DIRECT</Text>
             </View>
           )}
           
-          <View className="absolute top-4 right-4 bg-black/70 px-3 py-2 rounded-full">
-            <Text className="text-white font-montserrat-medium text-sm">{event?.category?.name}</Text>
+          <View className="absolute px-3 py-2 rounded-full top-4 right-4 bg-black/70">
+            <Text className="text-sm text-white font-montserrat-medium">{event?.category?.name}</Text>
           </View>
         </View>
 
@@ -293,14 +292,14 @@ export default function EventDetailScreen() {
                 isLiveEvent(event) || isOldEvent(event) ? (
                   <>
                     <Play size={20} color="#FFFFFF" />
-                    <Text className="ml-2 font-montserrat-bold text-white text-lg">
+                    <Text className="ml-2 text-lg text-white font-montserrat-bold">
                       Regarder Maintenant
                     </Text>
                   </>
                 ) : (
                   <>
                     <Clock size={20} color="#FFFFFF" />
-                    <Text className="ml-2 font-montserrat-bold text-white text-lg">
+                    <Text className="ml-2 text-lg text-white font-montserrat-bold">
                       Bientôt Disponible
                     </Text>
                   </>
@@ -308,7 +307,7 @@ export default function EventDetailScreen() {
               ) : (
                 <>
                   <DollarSign size={20} color="#FFFFFF" />
-                  <Text className="ml-2 font-montserrat-bold text-white text-lg">
+                  <Text className="ml-2 text-lg text-white font-montserrat-bold">
                     Reserver l'Accès - {event.price} {event.currency}
                   </Text>
                 </>
@@ -317,6 +316,6 @@ export default function EventDetailScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, Filter, Calendar } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useApp } from '@/contexts/AppContext';
@@ -96,7 +95,7 @@ export default function SearchScreen() {
   };
 
   return (
-    <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <View className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <View className="px-4 pt-4">
         <Text className={`font-montserrat-bold text-2xl mb-6 ${
           currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
@@ -136,7 +135,7 @@ export default function SearchScreen() {
               onPress={() => setDateFilter(filter)}
               className={`mr-3 px-4 py-2 rounded-full border ${
                 dateFilter === filter
-                  ? 'bg-primary-500 border-primary-500'
+                  ? 'bg-primary-550 border-primary-550'
                   : currentTheme === 'dark'
                   ? 'border-gray-600 bg-gray-800'
                   : 'border-gray-200 bg-white'
@@ -181,13 +180,13 @@ export default function SearchScreen() {
           ))}
 
           {isLoading && (
-            <View className="flex-1 justify-center items-center">
+            <View className="items-center justify-center flex-1">
               <ActivityIndicator size="large" color="#8b5cf6" />
             </View>
           )}
 
           {filteredEvents.length === 0 && (
-            <View className="py-8 items-center">
+            <View className="items-center py-8">
               <Text className={`font-montserrat text-center ${
                 currentTheme === 'dark' ? 'text-gray-400' : 'text-gray-500'
               }`}>
@@ -200,13 +199,13 @@ export default function SearchScreen() {
           <View className="px-4 pb-4">
             <View className="flex-row items-center justify-between">
               
-              {page > 1 && <TouchableOpacity onPress={() => setPage(page - 1)} disabled={page === 1} className='border-primary-500 border py-2 px-4 rounded-xl'>
+              {page > 1 && <TouchableOpacity onPress={() => setPage(page - 1)} disabled={page === 1} className='px-4 py-2 border border-primary-500 rounded-xl'>
                 <Text className={`font-montserrat-medium ${
                   currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
                 }`}>Page précédente</Text>
               </TouchableOpacity>}
               
-              {page < lastPage && <TouchableOpacity onPress={() => setPage(page + 1)} disabled={page === lastPage} className='bg-primary-500 py-2 px-4 rounded-xl'>
+              {page < lastPage && <TouchableOpacity onPress={() => setPage(page + 1)} disabled={page === lastPage} className='px-4 py-2 bg-primary-500 rounded-xl'>
                 <Text className={`font-montserrat-medium ${
                   currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
                 }`}>Page suivante</Text>
@@ -222,6 +221,6 @@ export default function SearchScreen() {
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

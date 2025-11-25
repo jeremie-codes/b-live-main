@@ -8,7 +8,7 @@ interface EventCardProps {
   event: EventType;
   paid?: string;
   favoris?: boolean | undefined | string;
-  unFavoris?: (id: number) => void | boolean;
+  unFavoris?: (id: number) => Promise<boolean | void>
   onPress?: () => void;
 }
 
@@ -55,14 +55,14 @@ export default function EventCard({ event, onPress, favoris, unFavoris, paid }: 
           )}
 
         {isLiveEvent(event) && (
-          <View className="absolute top-3 left-3 bg-red-500 px-3 py-1 rounded-full flex-row items-center">
-            <View className="w-2 h-2 bg-white rounded-full mr-2" />
-            <Text className="text-white font-montserrat-semibold text-xs">EN DIRECT</Text>
+          <View className="absolute flex-row items-center px-3 py-1 bg-red-500 rounded-full top-3 left-3">
+            <View className="w-2 h-2 mr-2 bg-white rounded-full" />
+            <Text className="text-xs text-white font-montserrat-semibold">EN DIRECT</Text>
           </View>
         )}
 
         {favoris && (
-          <TouchableOpacity className="absolute bottom-3 right-3 bg-white p-1 rounded-full" onPress={() => unFavoris ? unFavoris(event.id) : {}}>
+          <TouchableOpacity className="absolute p-1 bg-white rounded-full bottom-3 right-3" onPress={() => unFavoris ? unFavoris(event.id) : {}}>
             <Heart size={18} color="#FF0000" fill={'#FF0000'} />
           </TouchableOpacity>
         )}
@@ -105,7 +105,7 @@ export default function EventCard({ event, onPress, favoris, unFavoris, paid }: 
           </Text>
         </View>
         
-        <View className="flex-row justify-between items-center">
+        <View className="flex-row items-center justify-between">
 
           <Text className={`font-montserrat text-sm mb-3 mt-2 ${
             currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-600'

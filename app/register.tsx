@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Pressable, ActivityIndicator, } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Mail, Lock, Eye, EyeOff, User, ArrowLeft, Smartphone, RefreshCw, X } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
@@ -82,7 +81,7 @@ export default function RegisterScreen() {
   const isOtpValid = otp.trim().length === 6;
 
   return (
-    <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <View className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
@@ -101,7 +100,7 @@ export default function RegisterScreen() {
             </Text>
           </View>
 
-          {!isOtpSent && (<View className="flex-1 justify-center px-6 py-8">
+          {!isOtpSent && (<View className="justify-center flex-1 px-6 py-8">
             {/* Logo/Brand */}
             <View className="items-center mb-8">
               
@@ -297,7 +296,7 @@ export default function RegisterScreen() {
                   </TouchableOpacity>
                 </View>
                 {confirmPassword && password !== confirmPassword && (
-                  <Text className="text-red-500 font-montserrat text-sm mt-1">
+                  <Text className="mt-1 text-sm text-red-500 font-montserrat">
                     Les mots de passe ne correspondent pas
                   </Text>
                 )}
@@ -313,7 +312,7 @@ export default function RegisterScreen() {
                     : 'bg-primary-500'
                 }`}
               >
-                <Text className="font-montserrat-bold text-white text-center text-lg">
+                <Text className="text-lg text-center text-white font-montserrat-bold">
                   {isLoading ? 'Inscription...' : 'Créer mon compte'}
                 </Text>
               </TouchableOpacity>
@@ -334,7 +333,7 @@ export default function RegisterScreen() {
             </View>
           </View>)}
 
-          {isOtpSent && (<View className="flex-1 justify-center px-6 py-8">
+          {isOtpSent && (<View className="justify-center flex-1 px-6 py-8">
             {/* Registration Form */}
             <View className={`rounded-2xl p-6 mb-6 ${
               currentTheme === 'dark' ? 'bg-gray-800' : 'bg-white'
@@ -408,7 +407,7 @@ export default function RegisterScreen() {
                     : 'bg-primary-500'
                 }`}
               >
-                <Text className="font-montserrat-bold text-white text-center text-lg">
+                <Text className="text-lg text-center text-white font-montserrat-bold">
                   {isLoading ? 'Vérification...' : 'Vérifier'}
                 </Text>
               </TouchableOpacity>
@@ -417,6 +416,6 @@ export default function RegisterScreen() {
           )}
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }

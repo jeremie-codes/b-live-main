@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Heart, ShoppingCart, User2 } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
@@ -39,18 +38,18 @@ export default function FavorisScreen() {
       
   if (isLoading) {
     return (
-      <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
-        <View className="flex-1 justify-center items-center">
+      <View className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <View className="items-center justify-center flex-1">
           <ActivityIndicator size="large" color="#8b5cf6" />
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (!user) {
     return (
-      <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
-        <View className="flex-1 justify-center items-center px-4">
+      <View className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <View className="items-center justify-center flex-1 px-4">
           <User2 size={64} color={currentTheme === 'dark' ? '#4B5563' : '#9CA3AF'} />
           <Text className={`font-montserrat-bold text-xl mb-4 mt-4 ${
             currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
@@ -63,7 +62,7 @@ export default function FavorisScreen() {
             Veuillez vous connecter pour voir votre favoris
           </Text>
 
-          <TouchableOpacity onPress={() => router.push('/login')} className='bg-primary-500 py-2 px-4 rounded-xl mt-4'>
+          <TouchableOpacity onPress={() => router.push('/login')} className='px-4 py-2 mt-4 bg-primary-500 rounded-xl'>
             <Text className={`font-montserrat-bold text-xl mb-1 ${
               currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
             }`}>
@@ -71,17 +70,17 @@ export default function FavorisScreen() {
             </Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
-  const unFavoris = async (eventId: number) => {
+  const unFavoris = async (eventId: number): Promise<boolean | void> => {
     await toggleFavorite(eventId, true);
     setFavorites((prevFavorites) => prevFavorites.filter((event) => event.id !== eventId));
   };
 
   return (
-    <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <View className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <ScrollView showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -117,7 +116,7 @@ export default function FavorisScreen() {
             ))}
           </View>
         ) : (
-          <View className="px-4 py-12 items-center">
+          <View className="items-center px-4 py-12">
             <Heart size={64} color={currentTheme === 'dark' ? '#4B5563' : '#9CA3AF'} />
             <Text className={`font-montserrat-bold text-lg mb-2 mt-4 ${
               currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-700'
@@ -131,16 +130,16 @@ export default function FavorisScreen() {
             </Text>
             <TouchableOpacity
               onPress={() => router.push('/')}
-              className="bg-primary-500 px-6 py-3 rounded-xl flex-row items-center"
+              className="flex-row items-center px-6 py-3 bg-primary-500 rounded-xl"
             >
               <ShoppingCart size={20} color="#FFFFFF" />
-              <Text className="font-montserrat-semibold text-white ml-2">
+              <Text className="ml-2 text-white font-montserrat-semibold">
                 Découvrir les Événements
               </Text>
             </TouchableOpacity>
           </View>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

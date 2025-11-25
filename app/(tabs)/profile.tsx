@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { User, Mail, Calendar, CreditCard, ChevronRight, UserPlus, UserCog } from 'lucide-react-native';
 import { Moon, Sun, Smartphone, Globe, Shield } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
@@ -28,7 +27,7 @@ export default function ProfileScreen() {
   ];
 
   return (
-    <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <View className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <ScrollView className="px-4 pt-4">
         <Text className={`font-montserrat-bold text-2xl mb-8 ${
           currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
@@ -58,7 +57,7 @@ export default function ProfileScreen() {
                 Vous n'êtes pas connecté
               </Text>
 
-              <TouchableOpacity onPress={() => router.push('/login')} className='bg-primary-500 py-2 px-4 rounded-xl mt-4'>
+              <TouchableOpacity onPress={() => router.push('/login')} className='px-4 py-2 mt-4 bg-primary-500 rounded-xl'>
                 <Text className={`font-montserrat-bold text-xl mb-1 ${
                   currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
                 }`}>
@@ -214,11 +213,11 @@ export default function ProfileScreen() {
               : 'border-red-200 bg-red-50'
           }`}
         >
-          <Text className="font-montserrat-semibold text-red-500 text-center">
+          <Text className="text-center text-red-500 font-montserrat-semibold">
             Se déconnecter {isLoading && <ActivityIndicator size="small" color="#FF0000" />}
           </Text>
         </TouchableOpacity>}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

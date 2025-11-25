@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Play, Zap, Users, Star } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
@@ -23,15 +22,15 @@ export default function WelcomeScreen() {
   ];
 
   return (
-    <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <View className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <View className="flex-1 px-6 py-8">
         {/* Hero Section */}
-        <View className="flex-1 justify-center items-center">
+        <View className="items-center justify-center flex-1">
           {/* Logo */}
           <View className={`w-24 h-24 rounded-full items-center justify-center mb-6 overflow-hidden ${
               currentTheme === 'dark' ? 'bg-primary-500/20' : 'bg-primary-500/10'
             }`}>
-              <Image source={require('../assets/images/icon-app.png')} className='w-full h-full object-cover' />
+              <Image source={require('../assets/images/icon-app.png')} className='object-cover w-full h-full' />
             </View>
 
           {/* Title */}
@@ -78,9 +77,9 @@ export default function WelcomeScreen() {
         <View className="space-y-4">
           <TouchableOpacity
             onPress={() => router.push('/login')}
-            className="bg-primary-500 py-4 px-6 rounded-xl"
+            className="px-6 py-4 bg-primary-500 rounded-xl"
           >
-            <Text className="font-montserrat-bold text-white text-center text-lg">
+            <Text className="text-lg text-center text-white font-montserrat-bold">
               Se connecter
             </Text>
           </TouchableOpacity>
@@ -91,7 +90,7 @@ export default function WelcomeScreen() {
               currentTheme === 'dark' ? 'bg-transparent' : 'bg-transparent'
             }`}
           >
-            <Text className="font-montserrat-bold text-primary-500 text-center text-lg">
+            <Text className="text-lg text-center font-montserrat-bold text-primary-500">
               Découvrir
             </Text>
           </TouchableOpacity>
@@ -105,6 +104,6 @@ export default function WelcomeScreen() {
           </View>
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }

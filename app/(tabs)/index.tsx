@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, Image, RefreshControl, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Zap, TrendingUp, TrendingDown } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
@@ -91,7 +90,7 @@ export default function HomeScreen() {
   };
   
   return (
-    <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <View className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <ScrollView showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -102,9 +101,9 @@ export default function HomeScreen() {
           />
         }>
           
-        <View className="flex-row items-center justify-between px-4 py-6 ">
+        <View className="flex-row items-center justify-between px-4 py-8 ">
           <View className='w-24' style={{ height: 50 }}>
-            <Image source={require('@/assets/images/bliveo.png')} className='w-full h-full object-contain' />
+            <Image source={require('@/assets/images/bliveo.png')} className='object-contain w-full h-full' />
           </View>
 
           <View className='' >
@@ -152,7 +151,7 @@ export default function HomeScreen() {
         )}
 
         {isLoading && (
-          <View className="flex-1 justify-center items-center">
+          <View className="items-center justify-center flex-1">
             <ActivityIndicator size="large" color="#8b5cf6" />
           </View>
         )}
@@ -204,7 +203,7 @@ export default function HomeScreen() {
         )}
 
         {filteredEvents.length === 0  && (
-          <View className="px-4 py-8 items-center">
+          <View className="items-center px-4 py-8">
             <Text className={`font-montserrat text-center ${
               currentTheme === 'dark' ? 'text-gray-400' : 'text-gray-500'
             }`}>
@@ -217,13 +216,13 @@ export default function HomeScreen() {
         <View className="px-4 pb-4">
           <View className="flex-row items-center justify-between">
             
-            {page > 1 && <TouchableOpacity onPress={() => setPage(page - 1)} disabled={page === 1} className='border-primary-500 border py-2 px-4 rounded-xl'>
+            {page > 1 && <TouchableOpacity onPress={() => setPage(page - 1)} disabled={page === 1} className='px-4 py-2 border border-primary-500 rounded-xl'>
               <Text className={`font-montserrat-medium ${
                 currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
               }`}>Page précédente</Text>
             </TouchableOpacity>}
             
-            {page < lastPage && <TouchableOpacity onPress={() => setPage(page + 1)} disabled={page === lastPage} className='bg-primary-500 py-2 px-4 rounded-xl'>
+            {page < lastPage && <TouchableOpacity onPress={() => setPage(page + 1)} disabled={page === lastPage} className='px-4 py-2 bg-primary-500 rounded-xl'>
               <Text className={`font-montserrat-medium ${
                 currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
               }`}>Page suivante</Text>
@@ -239,6 +238,6 @@ export default function HomeScreen() {
         </View>
 
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

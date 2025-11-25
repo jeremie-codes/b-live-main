@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import { ArrowLeft, User, Lock, Eye, EyeOff, Save, Trash2, Mail } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 
@@ -68,8 +67,14 @@ export default function EditProfileScreen() {
     );
   };
 
+    const { isLoggedIn } = useApp();
+
+    if (!isLoggedIn) {
+      return <Redirect href="/login" />;
+    }
+
   return (
-    <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <View className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
@@ -241,7 +246,7 @@ export default function EditProfileScreen() {
                     </TouchableOpacity>
                   </View>
                   {confirmPassword && password !== confirmPassword && (
-                    <Text className="text-red-500 font-montserrat text-sm mt-1">
+                    <Text className="mt-1 text-sm text-red-500 font-montserrat">
                       Les mots de passe ne correspondent pas
                     </Text>
                   )}
@@ -260,7 +265,7 @@ export default function EditProfileScreen() {
               >
                 <View className="flex-row items-center justify-center">
                   <Save size={20} color="#FFFFFF" />
-                  <Text className="ml-2 font-montserrat-bold text-white text-lg">
+                  <Text className="ml-2 text-lg text-white font-montserrat-bold">
                     {isLoading ? 'Sauvegarde...' : 'Sauvegarder'}
                   </Text>
                 </View>
@@ -296,7 +301,7 @@ export default function EditProfileScreen() {
               >
                 <View className="flex-row items-center justify-center">
                   <Trash2 size={18} color="#FFFFFF" />
-                  <Text className="ml-2 font-montserrat-semibold text-white">
+                  <Text className="ml-2 text-white font-montserrat-semibold">
                     {isDeletingAccount ? 'Suppression...' : 'Supprimer mon compte'}
                   </Text>
                 </View>
@@ -305,6 +310,6 @@ export default function EditProfileScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }

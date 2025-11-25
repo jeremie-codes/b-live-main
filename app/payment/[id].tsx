@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, Platform, TextInput, Modal, ActivityIndicator
   , ScrollView, KeyboardAvoidingView, Dimensions, Animated, Pressable } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowLeft, CreditCard, Shield, Lock, Smartphone } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
@@ -54,18 +53,18 @@ export default function PaymentScreen() {
   
   if (isLoading) {
     return (
-      <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
-        <View className="flex-1 justify-center items-center">
+      <View className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <View className="items-center justify-center flex-1">
             <ActivityIndicator size="large" color="#8b5cf6" />
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (inProgress) {
     return (
-      <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
-        <View className="flex-1 justify-center items-center">
+      <View className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <View className="items-center justify-center flex-1">
             <ActivityIndicator size="large" color="#8b5cf6" />
             <Text className={`font-montserrat-bold text-xl ${
               currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
@@ -73,7 +72,7 @@ export default function PaymentScreen() {
               En attente de validation...
             </Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -104,8 +103,8 @@ export default function PaymentScreen() {
   
   if (!event) {
     return (
-      <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
-        <View className="flex-1 justify-center items-center">
+      <View className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <View className="items-center justify-center flex-1">
           <Text className={`font-montserrat-bold text-xl ${
             currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
           }`}>
@@ -114,14 +113,14 @@ export default function PaymentScreen() {
 
           <TouchableOpacity 
             onPress={() => router.back()}
-            className="mt-4 bg-primary-600 px-6 py-3 rounded-xl"
+            className="px-6 py-3 mt-4 bg-primary-600 rounded-xl"
           >
             <Text className="text-white font-['Montserrat-SemiBold']">
               Revenir en arrière
             </Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -220,7 +219,7 @@ export default function PaymentScreen() {
           setInProgress(false);
           showNotification('Actualisez la page pour voir les changements !', 'info');
           redirectToEvent()
-        }, 15000);
+        }, 20000);
         
       }
 
@@ -261,7 +260,7 @@ export default function PaymentScreen() {
   };
 
   return (
-    <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <View className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <KeyboardAvoidingView
         className={`${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -285,7 +284,7 @@ export default function PaymentScreen() {
 
         <ScrollView showsVerticalScrollIndicator={false}>
 
-          <View className=" px-4 pt-6">
+          <View className="px-4 pt-6 ">
             {/* Event Summary */}
             <View className={`rounded-xl p-4 mb-6 ${
               currentTheme === 'dark' ? 'bg-gray-800' : 'bg-white'
@@ -384,7 +383,7 @@ export default function PaymentScreen() {
                           keyboardType="phone-pad"
                         />
                         {error ? (
-                          <Text className="text-red-500 text-sm mt-1 px-1">{error}</Text>
+                          <Text className="px-1 mt-1 text-sm text-red-500">{error}</Text>
                         ) : null}
                       </View>
                     )}
@@ -404,7 +403,7 @@ export default function PaymentScreen() {
                         }`}
                       />
                       {error ? (
-                        <Text className="text-red-500 text-sm mt-1 px-1">{error}</Text>
+                        <Text className="px-1 mt-1 text-sm text-red-500">{error}</Text>
                       ) : null}
                     </View>
                   </View>
@@ -422,7 +421,7 @@ export default function PaymentScreen() {
             >
               <View className="flex-row items-center justify-center">
                 <Lock size={20} color="#FFFFFF" />
-                <Text className="ml-2 font-montserrat-bold text-white text-lg">
+                <Text className="ml-2 text-lg text-white font-montserrat-bold">
                   {isProcessing ? 'Traitement...' : `Payer ${event.price} ${event.currency}`}
                 </Text>
               </View>
@@ -437,13 +436,13 @@ export default function PaymentScreen() {
             
             <Animated.View
               style={{ transform: [{ translateY: slideAnim }], height: height * 0.9 }}
-              className="absolute bottom-0 w-full bg-white rounded-t-2xl overflow-hidden"
+              className="absolute bottom-0 w-full overflow-hidden bg-white rounded-t-2xl"
             >
               <View className="w-16 h-1.5 bg-gray-300 rounded-full self-center mt-2" />
 
               {/* Spinner pendant chargement */}
               {!isWebViewReady && (
-                <View className="flex-1 justify-center items-center ">
+                <View className="items-center justify-center flex-1 ">
                   <ActivityIndicator size="large" color="#000" />
                 </View>
               )}
@@ -479,7 +478,7 @@ export default function PaymentScreen() {
         )}
 
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 
 }

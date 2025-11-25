@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEventListener } from 'expo';
 import { ArrowLeft, Maximize, Minimize, User } from 'lucide-react-native';
@@ -56,11 +55,11 @@ const { id } = useLocalSearchParams<{ id: any }>();
   });
   if (isLoading) {
     return (
-      <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
-        <View className="flex-1 justify-center items-center">
+      <View className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <View className="items-center justify-center flex-1">
             <ActivityIndicator size="large" color="#8b5cf6" />
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
  
@@ -68,22 +67,22 @@ const { id } = useLocalSearchParams<{ id: any }>();
   
   if (!event) {
     return (
-      <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
-        <View className="flex-1 justify-center items-center">
+      <View className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <View className="items-center justify-center flex-1">
           <Text className={`font-montserrat-bold text-xl ${
             currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
           }`}>
             Événement non trouvé
           </Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (!event.is_paid) {
     return (
-      <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
-        <View className="flex-1 justify-center items-center px-4">
+      <View className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <View className="items-center justify-center flex-1 px-4">
           <Text className={`font-montserrat-bold text-xl mb-4 ${
             currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
           }`}>
@@ -96,14 +95,14 @@ const { id } = useLocalSearchParams<{ id: any }>();
           </Text>
           <TouchableOpacity
             onPress={() => router.replace(`/event/${event.id}`)}
-            className="bg-primary-500 px-6 py-3 rounded-xl"
+            className="px-6 py-3 bg-primary-500 rounded-xl"
           >
-            <Text className="font-montserrat-semibold text-white">
+            <Text className="text-white font-montserrat-semibold">
               Reserver l'Accès
             </Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -117,7 +116,7 @@ const { id } = useLocalSearchParams<{ id: any }>();
   const videoHeight = isFullscreen ? height : 250;
 
   return (
-    <SafeAreaView className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-white'}`}>
+    <View className={`flex-1 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-white'}`}>
       {!isFullscreen && (
         <View className={`flex-row items-center px-4 py-3 ${
           currentTheme === 'dark' ? 'bg-gray-900' : 'bg-white'
@@ -135,7 +134,7 @@ const { id } = useLocalSearchParams<{ id: any }>();
       )}
 
       {/* Video Player */}
-      <View style={{ height: videoHeight }} className="relative flex-1 flex-row justify-center items-center">
+      <View style={{ height: videoHeight }} className="relative flex-row items-center justify-center flex-1">
         {event?.link ? (
         <>
           <VideoView
@@ -151,7 +150,7 @@ const { id } = useLocalSearchParams<{ id: any }>();
                 justifyContent: 'center',
                 backgroundColor: 'rgba(0,0,0,0.3)',
               }}
-              className='inset-0 absolute flex-1'
+              className='absolute inset-0 flex-1'
             >
               <ActivityIndicator size="large" color="#fff" />
             </View>
@@ -165,16 +164,16 @@ const { id } = useLocalSearchParams<{ id: any }>();
 
         {/* Live Indicator */}
         {isLiveEvent(event) && (
-          <View className="absolute top-8 left-4 bg-red-500 px-3 py-1 rounded-full flex-row items-center">
-            <View className="w-2 h-2 bg-white rounded-full mr-2" />
-            <Text className="text-white font-montserrat-bold text-xs">LIVE</Text>
+          <View className="absolute flex-row items-center px-3 py-1 bg-red-500 rounded-full top-8 left-4">
+            <View className="w-2 h-2 mr-2 bg-white rounded-full" />
+            <Text className="text-xs text-white font-montserrat-bold">LIVE</Text>
           </View>
         )}
 
         {!isLiveEvent(event) && (
-          <View className="absolute top-8 left-4 bg-gray-500 px-3 py-1 rounded-full flex-row items-center">
-            <View className="w-2 h-2 bg-white rounded-full mr-2" />
-            <Text className="text-white font-montserrat-bold text-xs">RÉDIFFUSION</Text>
+          <View className="absolute flex-row items-center px-3 py-1 bg-gray-500 rounded-full top-8 left-4">
+            <View className="w-2 h-2 mr-2 bg-white rounded-full" />
+            <Text className="text-xs text-white font-montserrat-bold">RÉDIFFUSION</Text>
           </View>
         )}
         
@@ -198,6 +197,6 @@ const { id } = useLocalSearchParams<{ id: any }>();
           </View>
             
         </View>
-    </SafeAreaView>
+    </View>
   );
 }
