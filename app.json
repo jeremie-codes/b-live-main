@@ -56,7 +56,7 @@
       [
         "expo-video",
         {
-          "supportsBackgroundPlayback": true,
+          "supportsBackgroundPlayback": false,
           "supportsPictureInPicture": true
         }
       ]
@@ -66,7 +66,6 @@
     },
     "extra": {
       "eas": {
-        "projectId": "68b7c230-c0f9-4dbb-882e-1340bee0cee2"
       },
       "router": {}
     }
